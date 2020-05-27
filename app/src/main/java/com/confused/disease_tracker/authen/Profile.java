@@ -67,7 +67,7 @@ public class Profile extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        StorageReference profileRef = storageReference.child("users/" + fAuth.getCurrentUser().getUid() + "/profile.jpg");
+        StorageReference profileRef = storageReference.child("user/" + fAuth.getCurrentUser().getUid() + "/profile.jpg");
         profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -105,13 +105,13 @@ public class Profile extends AppCompatActivity {
            startActivity(new Intent(this, MainActivity.class));
        }
 
-        DocumentReference documentReference = fStore.collection("users").document(userId);
+        DocumentReference documentReference = fStore.collection("user").document(userId);
         documentReference.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if(documentSnapshot.exists()){
-                    phone.setText(documentSnapshot.getString("phone"));
-                    fullName.setText(documentSnapshot.getString("fName"));
+                    phone.setText(documentSnapshot.getString("phoneNum"));
+                    fullName.setText(documentSnapshot.getString("name"));
                     email.setText(documentSnapshot.getString("email"));
 
                 }else {
@@ -168,9 +168,9 @@ public class Profile extends AppCompatActivity {
             public void onClick(View v) {
                 // open gallery
                 Intent i = new Intent(v.getContext(),EditProfile.class);
-                i.putExtra("fullName",fullName.getText().toString());
+                i.putExtra("name",fullName.getText().toString());
                 i.putExtra("email",email.getText().toString());
-                i.putExtra("phone",phone.getText().toString());
+                i.putExtra("phoneNum",phone.getText().toString());
                 startActivity(i);
             }
         });

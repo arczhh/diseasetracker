@@ -110,11 +110,11 @@ public class Register extends AppCompatActivity {
 
                             Toast.makeText(Register.this, "User Created.", Toast.LENGTH_SHORT).show();
                             userID = fAuth.getCurrentUser().getUid();
-                            DocumentReference documentReference = fStore.collection("users").document(userID);
+                            DocumentReference documentReference = fStore.collection("user").document(userID);
                             Map<String,Object> user = new HashMap<>();
-                            user.put("fName",fullName);
+                            user.put("name",fullName);
                             user.put("email",email);
-                            user.put("phone",phone);
+                            user.put("phoneNum",phone);
                             documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
