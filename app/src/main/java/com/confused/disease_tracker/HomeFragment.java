@@ -103,6 +103,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             mMap.setMyLocationEnabled(true);
             mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
             patientLocation();
+            hospitalLocation();
         }
     }
 
@@ -194,6 +195,48 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                                                                 .snippet("Test")
                                                                 .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_patient)));
                                                     }
+                                                } else {
+                                                    Log.d("TAG", "Error getting documents: ", task.getException());
+                                                }
+                                            }
+                                        });
+                            }
+                        } else {
+                            Log.d("TAG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+    private void hospitalLocation() {
+        db.collection("hospital")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (final QueryDocumentSnapshot hospital : task.getResult()) {
+                                db.collection("hospital/" + hospital.getId() + "/responsible")
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()) {
+                                                    String respDisease = "โรคที่รับผิดชอบ: ";
+                                                    int strLength = respDisease.length();
+                                                    for (QueryDocumentSnapshot resp : task.getResult()) {
+                                                        respDisease += resp.getData().get("diseaseName")+", ";
+                                                    }
+                                                    if(respDisease.length() == strLength){
+                                                        respDisease = "ไม่พบข้อมูล";
+                                                    }else{
+                                                        respDisease = respDisease.substring(0, respDisease.length() - 2);
+                                                    }
+                                                    mMap.addMarker(new MarkerOptions()
+                                                            .position(new LatLng((double) hospital.getData().get("lat"), (double) hospital.getData().get("lng")))
+                                                            .title((String) hospital.getData().get("hospitalName"))
+                                                            .snippet(respDisease)
+                                                            .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_local_hospital_black_24dp)));
                                                 } else {
                                                     Log.d("TAG", "Error getting documents: ", task.getException());
                                                 }
