@@ -173,9 +173,7 @@ public class Profile extends AppCompatActivity {
                    startActivity(i);
                }
            });
-        }else{
-           startActivity(new Intent(this, MainActivity.class));
-       }
+        }
 
     }
 

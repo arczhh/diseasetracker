@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,6 +24,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class Login extends AppCompatActivity {
     EditText mEmail,mPassword;
@@ -76,7 +81,15 @@ public class Login extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
                             Toast.makeText(Login.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(getApplicationContext(), Profile.class));
+                            fAuth = FirebaseAuth.getInstance();
+                            FirebaseFirestore fStore = FirebaseFirestore.getInstance();
+                            StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+                            FirebaseUser user = fAuth.getCurrentUser();
+                            if(!user.isEmailVerified()){
+                                startActivity(new Intent(getApplicationContext(), Profile.class));
+                            }else{
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            }
                         }else {
                             //Toast.makeText(Login.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             Toast.makeText(Login.this, "Email/Password incorrect! ", Toast.LENGTH_SHORT).show();
