@@ -2,7 +2,11 @@ package com.confused.disease_tracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -22,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
+import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.DialogPopup;
 import com.confused.disease_tracker.helper.FontManager;
 import com.google.android.gms.common.ConnectionResult;
@@ -32,6 +37,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -52,10 +59,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     private final static int Request_User_Location_Code = 99;
     private View locationButton;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private DatabaseHelper sqLiteDatabase;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         @SuppressLint("ResourceType") View view = inflater.inflate(R.menu.fragment_home, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -66,6 +75,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             ft.replace(R.id.map, mapFragment).commit();
         }
         mapFragment.getMapAsync(this);
+        sqLiteDatabase = new DatabaseHelper(getContext());
         locationButton = (View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent();
         // Change the visibility of my location button
         if(locationButton != null){
@@ -163,7 +173,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             currentUserLocationMarker.remove();
         }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
+        sqLiteDatabase.insertUserLocation(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
         if(googleApiClient != null){
@@ -236,7 +246,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                                                             .position(new LatLng((double) hospital.getData().get("lat"), (double) hospital.getData().get("lng")))
                                                             .title((String) hospital.getData().get("hospitalName"))
                                                             .snippet(respDisease)
-                                                            .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_local_hospital_black_24dp)));
+                                                            .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
                                                 } else {
                                                     Log.d("TAG", "Error getting documents: ", task.getException());
                                                 }
