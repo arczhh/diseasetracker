@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -113,7 +115,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             mMap.setMyLocationEnabled(true);
             mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
             patientLocation();
-            hospitalLocation();
+            getHospitalData();
         }
     }
 
@@ -173,11 +175,29 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             currentUserLocationMarker.remove();
         }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        sqLiteDatabase.insertUserLocation(location.getLatitude(), location.getLongitude());
+        insertLocation(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
         if(googleApiClient != null){
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        }
+    }
+
+    private void insertLocation(double lat, double lng){
+        Cursor res = sqLiteDatabase.getUserLocationData();
+        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData();
+        if(res.getCount() == 0){
+            sqLiteDatabase.insertUserLocation(lat, lng);
+        }else{
+            while (lastLoc.moveToNext()){
+                double lastLat = Double.parseDouble(Double.toString(lastLoc.getDouble(1)).substring(0,7));
+                double lastLng = Double.parseDouble(Double.toString(lastLoc.getDouble(2)).substring(0,7));
+                double currentLat = Double.parseDouble(Double.toString(lat).substring(0,7));
+                double currentLng = Double.parseDouble(Double.toString(lng).substring(0,7));
+                if(lastLat-currentLat != 0 && lastLng-currentLng != 0){
+                    sqLiteDatabase.insertUserLocation(lat, lng);
+                }
+            }
         }
     }
 
@@ -218,45 +238,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                 });
     }
 
-    private void hospitalLocation() {
-        db.collection("hospital")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (final QueryDocumentSnapshot hospital : task.getResult()) {
-                                db.collection("hospital/" + hospital.getId() + "/responsible")
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    String respDisease = "โรคที่รับผิดชอบ: ";
-                                                    int strLength = respDisease.length();
-                                                    for (QueryDocumentSnapshot resp : task.getResult()) {
-                                                        respDisease += resp.getData().get("diseaseName")+", ";
-                                                    }
-                                                    if(respDisease.length() == strLength){
-                                                        respDisease = "ไม่พบข้อมูล";
-                                                    }else{
-                                                        respDisease = respDisease.substring(0, respDisease.length() - 2);
-                                                    }
-                                                    mMap.addMarker(new MarkerOptions()
-                                                            .position(new LatLng((double) hospital.getData().get("lat"), (double) hospital.getData().get("lng")))
-                                                            .title((String) hospital.getData().get("hospitalName"))
-                                                            .snippet(respDisease)
-                                                            .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
-                                                } else {
-                                                    Log.d("TAG", "Error getting documents: ", task.getException());
-                                                }
-                                            }
-                                        });
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+    public void getHospitalData(){
+        Cursor res = sqLiteDatabase.getHospitalData();
+        if(res.getCount() == 0){
+            return;
+        }
+        while (res.moveToNext()){
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(res.getDouble(2), res.getDouble(3)))
+                    .title(res.getString(1))
+                    .snippet(res.getString(4))
+                    .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
+        }
     }
 }
