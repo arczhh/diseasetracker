@@ -2,15 +2,17 @@ package com.confused.disease_tracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,14 +20,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
 import com.confused.disease_tracker.helper.DatabaseHelper;
@@ -39,13 +33,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -175,7 +169,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             currentUserLocationMarker.remove();
         }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        insertLocation(location.getLatitude(), location.getLongitude());
+        //insertLocation(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
         if(googleApiClient != null){
@@ -184,18 +178,22 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     private void insertLocation(double lat, double lng){
-        Cursor res = sqLiteDatabase.getUserLocationData();
-        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData();
-        if(res.getCount() == 0){
-            sqLiteDatabase.insertUserLocation(lat, lng);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
+        if(lastLoc.getCount() == 0){
+            sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
         }else{
             while (lastLoc.moveToNext()){
-                double lastLat = Double.parseDouble(Double.toString(lastLoc.getDouble(1)).substring(0,7));
-                double lastLng = Double.parseDouble(Double.toString(lastLoc.getDouble(2)).substring(0,7));
-                double currentLat = Double.parseDouble(Double.toString(lat).substring(0,7));
-                double currentLng = Double.parseDouble(Double.toString(lng).substring(0,7));
+                double lastLat = Setting.covertDecimal(lastLoc.getDouble(2),4);
+                double lastLng = Setting.covertDecimal(lastLoc.getDouble(3),4);
+                double currentLat = Setting.covertDecimal(lat,4);
+                double currentLng = Setting.covertDecimal(lng,4);
                 if(lastLat-currentLat != 0 && lastLng-currentLng != 0){
-                    sqLiteDatabase.insertUserLocation(lat, lng);
+                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
+                }else{
+                    if(Setting.covertDecimal(lastLoc.getDouble(2),6)-Setting.covertDecimal(lat,6) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),6)-Setting.covertDecimal(lng,6) != 0){
+                        sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 0);
+                    }
                 }
             }
         }

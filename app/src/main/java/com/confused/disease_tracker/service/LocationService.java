@@ -1,0 +1,155 @@
+package com.confused.disease_tracker.service;
+
+import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.Settings;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+
+import com.confused.disease_tracker.MainActivity;
+import com.confused.disease_tracker.R;
+import com.confused.disease_tracker.Setting;
+import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+public class LocationService extends Service {
+
+    private LocationListener listener;
+    private LocationManager locationManager;
+    private static final int NOTIF_ID = 1;
+    private static final String NOTIF_CHANNEL_ID = "Channel_Id";
+    private DatabaseHelper sqLiteDatabase;
+    public long refreshTime = 60*1000*5*0;
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
+        if(!user.isAnonymous()){
+            sqLiteDatabase = new DatabaseHelper(getApplication());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                startMyOwnForeground();
+            else
+                startForeground(1, new Notification());
+            listener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    Intent i = new Intent("location_update");
+                    i.putExtra("coordinates", location.getLongitude() + " " + location.getLatitude());
+                    insertLocation(location.getLatitude(),location.getLongitude());
+                    sendBroadcast(i);
+                }
+
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+                    Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                }
+            };
+
+            locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+            //noinspection MissingPermission
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, refreshTime, listener);
+        }else{
+            stopService(new Intent(this, LocationService.class));
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(locationManager != null){
+            //noinspection MissingPermission
+            locationManager.removeUpdates(listener);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void startMyOwnForeground(){
+        String NOTIFICATION_CHANNEL_ID = "com.example.simpleapp";
+        String channelName = "My Background Service";
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        chan.setLightColor(Color.BLUE);
+        chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.createNotificationChannel(chan);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(true)
+                .setSmallIcon(R.drawable.ic_map_black_24dp)
+                .setContentTitle("App is running in background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build();
+        startForeground(2, notification);
+    }
+
+    private void insertLocation(double lat, double lng){
+        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
+        if(lastLoc.getCount() == 0){
+            sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
+        }else{
+            while (lastLoc.moveToNext()){
+                int majorDec = 4;
+                int minorDec = 5;
+                if(Setting.covertDecimal(lastLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng,6) != majorDec){
+                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
+                    Toast.makeText(this, "Major Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
+                }
+                if(Setting.covertDecimal(lastLoc.getDouble(2), minorDec)-Setting.covertDecimal(lat, minorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3), minorDec)-Setting.covertDecimal(lng, minorDec) != 0){
+                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 0);
+                    Toast.makeText(this, "Minor Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
+                }
+            }
+            //sendBroadcast(intent);
+        }
+    }
+}
