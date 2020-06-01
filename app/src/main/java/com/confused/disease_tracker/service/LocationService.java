@@ -39,7 +39,9 @@ public class LocationService extends Service {
     private static final int NOTIF_ID = 1;
     private static final String NOTIF_CHANNEL_ID = "Channel_Id";
     private DatabaseHelper sqLiteDatabase;
-    public long refreshTime = 60*1000*5*0;
+    public long refreshTime = 60*1000*1;
+    private int majorDec = 3;
+    private int minorDec = 5;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     @Nullable
@@ -96,7 +98,7 @@ public class LocationService extends Service {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, refreshTime, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, refreshTime, 3, listener);
         }else{
             stopService(new Intent(this, LocationService.class));
         }
@@ -128,6 +130,7 @@ public class LocationService extends Service {
                 .setContentTitle("App is running in background")
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
+                .setContentText(user.getEmail())
                 .build();
         startForeground(2, notification);
     }
@@ -137,19 +140,40 @@ public class LocationService extends Service {
         if(lastLoc.getCount() == 0){
             sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
         }else{
-            while (lastLoc.moveToNext()){
-                int majorDec = 4;
-                int minorDec = 5;
-                if(Setting.covertDecimal(lastLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng,6) != majorDec){
-                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
-                    Toast.makeText(this, "Major Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
-                }
-                if(Setting.covertDecimal(lastLoc.getDouble(2), minorDec)-Setting.covertDecimal(lat, minorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3), minorDec)-Setting.covertDecimal(lng, minorDec) != 0){
-                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 0);
-                    Toast.makeText(this, "Minor Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
-                }
+            if(isMajorFarFromLastDistance(lat, lng)){
+                sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
+                Toast.makeText(this, "Major Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
+            }else if(isMinor(lat, lng)){
+                sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 0);
+                Toast.makeText(this, "Minor Point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
             }
-            //sendBroadcast(intent);
         }
+    }
+
+    private boolean isMajor(double lat, double lng){
+        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
+        boolean flag = false;
+        while (lastLoc.moveToNext()){
+            flag = Setting.covertDecimal(lastLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng, majorDec) != 0;
+        }
+        return flag;
+    }
+
+    private boolean isMinor(double lat, double lng){
+        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
+        boolean flag = false;
+        while (lastLoc.moveToNext()){
+            flag = Setting.covertDecimal(lastLoc.getDouble(2), minorDec)-Setting.covertDecimal(lat, minorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3), minorDec)-Setting.covertDecimal(lng, minorDec) != 0;
+        }
+        return flag;
+    }
+
+    private boolean isMajorFarFromLastDistance(double lat, double lng){
+        Cursor lastMajorLoc = sqLiteDatabase.getUserLastMajorLocationData(user.getUid());
+        boolean flag = false;
+        while (lastMajorLoc.moveToNext()){
+            flag = Setting.covertDecimal(lastMajorLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastMajorLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng, majorDec) != 0;
+        }
+        return flag;
     }
 }

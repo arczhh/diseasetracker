@@ -80,6 +80,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getUserLastMajorLocationData(String USERID){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND isMajor = 1 ORDER BY LID  DESC LIMIT 1",null);
+        return res;
+    }
+
     public Cursor getUserLocationTrack(String USERID){
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"'",null);
         return res;

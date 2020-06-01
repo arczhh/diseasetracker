@@ -7,6 +7,13 @@
     android:background="#D5D5D5"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/backBtn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_arrow_back_black_24dp"
+        tools:ignore="MissingConstraints" />
+
     <Button
         android:id="@+id/button"
         android:layout_width="0dp"

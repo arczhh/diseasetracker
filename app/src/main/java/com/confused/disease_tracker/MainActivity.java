@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Setting.setWindow(this);
         AndroidThreeTen.init(this);
         LocationService mYourService = new LocationService();
         Intent mServiceIntent = new Intent(this, mYourService.getClass());
@@ -40,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new HomeFragment()).commit();
         }
-        Setting.setWindow(this);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
@@ -58,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         case R.id.nav_alerthistory:
                             selectedFragment = new AlertHistoryFragment();
+                            break;
+                        case R.id.nav_setting:
+                            selectedFragment = new SettingFlagment();
                             break;
                     }
 
