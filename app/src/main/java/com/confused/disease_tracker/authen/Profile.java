@@ -88,13 +88,6 @@ public class Profile extends AppCompatActivity {
         user = fAuth.getCurrentUser();
 
        if(!user.isEmailVerified()) {
-           StorageReference profileRef = storageReference.child("user/" + userId + "/profile.jpg");
-           profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-               @Override
-               public void onSuccess(Uri uri) {
-                   Picasso.get().load(uri).into(profileImage);
-               }
-           });
 
            verifyMsgTxtView.setVisibility(View.VISIBLE);
            resendCodeBtn.setVisibility(View.VISIBLE);
@@ -116,6 +109,15 @@ public class Profile extends AppCompatActivity {
                }
            });
        }
+
+        StorageReference profileRef = storageReference.child("user/" + userId + "/profile.jpg");
+        profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Picasso.get().load(uri).into(profileImage);
+            }
+        });
+        
         DocumentReference documentReference = fStore.collection("user").document(userId);
         documentReference.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
             @Override
