@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,12 +40,16 @@ public class SplashScreen extends AppCompatActivity {
             @Override
             public void run() {
                 Intent act1 = new Intent(SplashScreen.this, Login.class);
-                Intent act2 = new Intent(SplashScreen.this, MainActivity.class);
+                Intent act2 = new Intent(SplashScreen.this, Profile.class);
+                Intent act3 = new Intent(SplashScreen.this, MainActivity.class);
                 if(user == null){
                     startActivity(act1);
                     finish();
-                }else{
+                }else if(!user.isEmailVerified()){
                     startActivity(act2);
+                    finish();
+                }else{
+                    startActivity(act3);
                     finish();
                 }
 
