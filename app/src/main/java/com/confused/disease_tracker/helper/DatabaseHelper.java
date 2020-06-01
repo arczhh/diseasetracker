@@ -6,6 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "disease_tracker";
@@ -23,8 +28,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB1+" (" +
                 "LID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "USERID VARCHAR(80),"+
                 "LAT DOUBLE," +
-                "LNG DOUBLE"+
+                "LNG DOUBLE,"+
+                "TIMESTAMP VARCHAR2(50),"+
+                "isMajor INT(1)"+
                 ")");
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB2+"(" +
                 "HOSPITALID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -43,10 +51,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Tab1
-    public boolean insertUserLocation(double lat, double lng){
+    public boolean insertUserLocation(String userid, double lat, double lng, int isMajor){
+        LocalTime localTimeInBangkok = LocalTime.now(ZoneId.of("Asia/Bangkok"));
+        LocalDate localDateInBangkok = LocalDate.now(ZoneId.of("Asia/Bangkok"));
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         ContentValues contentValues = new ContentValues();
+        contentValues.put("USERID", userid);
         contentValues.put("LAT", lat);
         contentValues.put("LNG", lng);
+        contentValues.put("TIMESTAMP", localDateInBangkok.format(dateFormat)+" "+localTimeInBangkok.format(timeFormat));
+        contentValues.put("isMajor", isMajor);
         long result = sqLiteDatabase.insert(TAB1, null, contentValues);
         if(result == -1){
             return false;
@@ -55,13 +70,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor getUserLocationData(){
-     Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1,null);
+    public Cursor getUserLocationData(String USERID){
+     Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE isMajor=1 AND USERID = '"+USERID+"'",null);
      return res;
     }
 
-    public Cursor getUserLastLocationData(){
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" ORDER BY LID DESC LIMIT 1",null);
+    public Cursor getUserLastLocationData(String USERID){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' ORDER BY LID  DESC LIMIT 1",null);
+        return res;
+    }
+
+    public Cursor getUserLastMajorLocationData(String USERID){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND isMajor = 1 ORDER BY LID  DESC LIMIT 1",null);
+        return res;
+    }
+
+    public Cursor getUserLocationTrack(String USERID){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"'",null);
         return res;
     }
 

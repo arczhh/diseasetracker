@@ -57,5 +57,12 @@ public class Setting {
         }
     }
 
+    public static double covertDecimal(double src, int n){
+        String srcToStr = Double.toString(src);
+        String[] split = srcToStr.split("\\.");
+        String dec = split[1]+"000000000000".substring(0,n);
+        return Double.parseDouble(split[0]+"."+dec);
+    }
+
 }
 
