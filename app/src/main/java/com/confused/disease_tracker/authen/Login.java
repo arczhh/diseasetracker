@@ -41,18 +41,13 @@ public class Login extends AppCompatActivity {
     TextView mCreateBtn,forgotTextLink;
     ProgressBar progressBar;
     FirebaseAuth fAuth;
-    private DatabaseHelper sqLiteDatabase;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Setting.setWindow(this);
-
-        this.hospitalLocation();
         Setting.checkUserLocationPermission(this);
-        sqLiteDatabase = new DatabaseHelper(this);
 
         mEmail = findViewById(R.id.Email);
         mPassword = findViewById(R.id.password);
@@ -156,55 +151,6 @@ public class Login extends AppCompatActivity {
                 });
 
                 passwordResetDialog.create().show();
-            }
-        });
-    }
-
-    private void hospitalLocation() {
-        db.collection("application").document("hospital")
-                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    final DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        db.collection("hospital")
-                                .get()
-                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                        if (task.isSuccessful()) {
-                                            for (final QueryDocumentSnapshot hospital : task.getResult()) {
-                                                db.collection("hospital/" + hospital.getId() + "/responsible")
-                                                        .get()
-                                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                                if (task.isSuccessful()) {
-                                                                    String respDisease = "โรคที่รับผิดชอบ: ";
-                                                                    int strLength = respDisease.length();
-                                                                    for (QueryDocumentSnapshot resp : task.getResult()) {
-                                                                        respDisease += resp.getData().get("diseaseName")+", ";
-                                                                    }
-                                                                    if(respDisease.length() == strLength){
-                                                                        respDisease = "ไม่พบข้อมูล";
-                                                                    }else{
-                                                                        respDisease = respDisease.substring(0, respDisease.length() - 2);
-                                                                    }
-                                                                    sqLiteDatabase.insertHospital((String) hospital.getData().get("hospitalName"), (double) hospital.getData().get("lat"), (double) hospital.getData().get("lng"), respDisease);
-                                                                } else {
-                                                                    Log.d("TAG", "Error getting documents: ", task.getException());
-                                                                }
-                                                            }
-                                                        });
-                                            }
-                                        } else {
-                                            Log.d("TAG", "Error getting documents: ", task.getException());
-                                        }
-                                    }
-                                });
-                    }
-                }
             }
         });
     }

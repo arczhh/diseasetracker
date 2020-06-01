@@ -36,10 +36,8 @@ public class LocationService extends Service {
 
     private LocationListener listener;
     private LocationManager locationManager;
-    private static final int NOTIF_ID = 1;
-    private static final String NOTIF_CHANNEL_ID = "Channel_Id";
     private DatabaseHelper sqLiteDatabase;
-    public long refreshTime = 60*1000*1;
+    public long refreshTime = 60*1000*5;
     private int majorDec = 3;
     private int minorDec = 5;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
