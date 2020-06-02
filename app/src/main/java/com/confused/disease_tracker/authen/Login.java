@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.confused.disease_tracker.EmptyActivity;
 import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
@@ -83,7 +84,7 @@ public class Login extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
                             Toast.makeText(Login.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(getApplicationContext(), Profile.class));
+                            startActivity(new Intent(getApplicationContext(), EmptyActivity.class));
                         }else {
                             //Toast.makeText(Login.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             Toast.makeText(Login.this, "Email/Password incorrect! ", Toast.LENGTH_SHORT).show();
