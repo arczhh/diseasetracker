@@ -88,16 +88,16 @@ public class MyTracksFragment extends Fragment implements OnMapReadyCallback {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868, 100.493645),5));
         }else{
             while (track.moveToNext()) {
-                animateMove[0] += track.getDouble(2);
-                animateMove[1] += track.getDouble(3);
+                animateMove[0] = track.getDouble(2);
+                animateMove[1] = track.getDouble(3);
                 mMap.addPolyline(userLocationLine
                         .add(new LatLng(track.getDouble(2), track.getDouble(3)))
                         .width(3f)
                         .color(Color.RED)
                 );
+
             }
-            Toast.makeText(getContext(), animateMove[0]/track.getCount()+", "+animateMove[1]/track.getCount(),Toast.LENGTH_LONG).show();
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(animateMove[0]/track.getCount(), animateMove[1]/track.getCount()), 15));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(animateMove[0], animateMove[1]), 15));
         }
     }
 }

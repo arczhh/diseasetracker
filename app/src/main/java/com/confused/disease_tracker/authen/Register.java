@@ -52,7 +52,6 @@ public class Register extends AppCompatActivity {
         mRepassword   = findViewById(R.id.repassword);
         mPhone      = findViewById(R.id.phone);
         mRegisterBtn= findViewById(R.id.registerBtn);
-        mLoginBtn   = findViewById(R.id.createText);
 
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
@@ -171,14 +170,6 @@ public class Register extends AppCompatActivity {
                 });
             }
         });
-
-        mLoginBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),Login.class));
-            }
-        });
-
     }
 
 }
