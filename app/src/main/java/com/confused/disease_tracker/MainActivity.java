@@ -8,7 +8,11 @@ import android.os.Bundle;
 
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
+import com.confused.disease_tracker.authen.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -21,7 +25,11 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity {
+    //test
+    SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,24 +38,13 @@ public class MainActivity extends AppCompatActivity {
         checkUserLocationPermission();
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+        //test
+        sessionManager = new SessionManager(this);
+        sessionManager.checkLogin();
+        HashMap<String, String> user = sessionManager.getUserDetail();
+        String mName = user.get(sessionManager.EMAIL);
+        String mPassword = user.get(sessionManager.PASSWORD);
 
-        //I added this to use checkbox
-        SharedPreferences preferences = getSharedPreferences("checkbox", MODE_PRIVATE);
-        String checkbox = preferences.getString("remember", "");
-        if (checkbox.equals("true")){
-            Intent intent = new Intent( this, MainActivity.class);
-
-            startActivity(intent);
-        }else if(checkbox.equals("false")){
-            Toast.makeText(this, "Please Sign In", Toast.LENGTH_SHORT).show();
-        }
-
-        //I added this if statement to keep the selected fragment when rotating the device
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new HomeFragment()).commit();
-        }
-        Setting.setWindow(this);
 
     }
 
