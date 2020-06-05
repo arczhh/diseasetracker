@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class Register extends AppCompatActivity {
     public static final String TAG = "TAG";
-    EditText mFullName,mEmail,mPassword,mPhone;
+    EditText mFullName,mEmail,mPassword,mPhone, mRepassword;
     Button mRegisterBtn;
     TextView mLoginBtn;
     FirebaseAuth fAuth;
@@ -49,6 +49,7 @@ public class Register extends AppCompatActivity {
         mFullName   = findViewById(R.id.fullName);
         mEmail      = findViewById(R.id.Email);
         mPassword   = findViewById(R.id.password);
+        mRepassword   = findViewById(R.id.repassword);
         mPhone      = findViewById(R.id.phone);
         mRegisterBtn= findViewById(R.id.registerBtn);
         mLoginBtn   = findViewById(R.id.createText);
@@ -57,7 +58,7 @@ public class Register extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         progressBar = findViewById(R.id.progressBar);
 
-        if(fAuth.getCurrentUser() == null){
+        if(fAuth.getCurrentUser() != null){
             startActivity(new Intent(getApplicationContext(), Profile.class));
             finish();
         }
@@ -68,21 +69,53 @@ public class Register extends AppCompatActivity {
             public void onClick(View v) {
                 final String email = mEmail.getText().toString().trim();
                 String password = mPassword.getText().toString().trim();
+                String repassword = mRepassword.getText().toString().trim();
                 final String fullName = mFullName.getText().toString();
                 final String phone    = mPhone.getText().toString();
 
-                if(TextUtils.isEmpty(email)){
-                    mEmail.setError("Email is Required.");
+
+                if(fullName.isEmpty()){
+                    mFullName.setError("Name is required.");
+                    return;
+                }
+
+                if(email.isEmpty()){
+                    mEmail.setError("Email is required.");
+                    return;
+                }
+
+                if(!email.matches("[a-zA-Z0-9._-]+@[a-z]+.[a-z]+")){
+                    mEmail.setError("Enter valid email");
                     return;
                 }
 
                 if(TextUtils.isEmpty(password)){
-                    mPassword.setError("Password is Required.");
+                    mPassword.setError("Password is required.");
                     return;
                 }
 
                 if(password.length() < 6){
                     mPassword.setError("Password Must be >= 6 Characters");
+                    return;
+                }
+
+                if(TextUtils.isEmpty(repassword)){
+                    mRepassword.setError("Re-Password is required.");
+                    return;
+                }
+
+                if(!password.equals(repassword)){
+                    mRepassword.setError("Password doesn't match.");
+                    return;
+                }
+
+                if(phone.isEmpty()){
+                    mPhone.setError("Phone is required.");
+                    return;
+                }
+
+                if(!phone.matches("0+\\d{9}")){
+                    mPhone.setError("Enter valid phone number.");
                     return;
                 }
 
@@ -147,4 +180,5 @@ public class Register extends AppCompatActivity {
         });
 
     }
+
 }
