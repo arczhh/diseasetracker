@@ -103,13 +103,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868,100.493645 ),5));
+        patientLocation();
+        getHospitalData();
         if (ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
-            mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
-            patientLocation();
-            getHospitalData();
         }
     }
 
@@ -169,33 +169,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             currentUserLocationMarker.remove();
         }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        //insertLocation(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
         if(googleApiClient != null){
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        }
-    }
-
-    private void insertLocation(double lat, double lng){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
-        if(lastLoc.getCount() == 0){
-            sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
-        }else{
-            while (lastLoc.moveToNext()){
-                double lastLat = Setting.covertDecimal(lastLoc.getDouble(2),4);
-                double lastLng = Setting.covertDecimal(lastLoc.getDouble(3),4);
-                double currentLat = Setting.covertDecimal(lat,4);
-                double currentLng = Setting.covertDecimal(lng,4);
-                if(lastLat-currentLat != 0 && lastLng-currentLng != 0){
-                    sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 1);
-                }else{
-                    if(Setting.covertDecimal(lastLoc.getDouble(2),6)-Setting.covertDecimal(lat,6) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),6)-Setting.covertDecimal(lng,6) != 0){
-                        sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng, 0);
-                    }
-                }
-            }
         }
     }
 
@@ -206,7 +183,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+                            for (final QueryDocumentSnapshot document : task.getResult()) {
                                 db.collection("patient/" + document.getId() + "/location")
                                         .orderBy("timestamp")
                                         .limit(1)
@@ -219,8 +196,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
 
                                                         mMap.addMarker(new MarkerOptions()
                                                                 .position(new LatLng((double) location.getData().get("lat"), (double) location.getData().get("lng")))
-                                                                .title((String) location.getData().get("timestamp"))
-                                                                .snippet("Test")
+                                                                .title((String) document.getData().get("patientName"))
+                                                                .snippet((String) document.getData().get("patientStatus")+" - "+location.getData().get("timestamp"))
                                                                 .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_patient)));
                                                     }
                                                 } else {
