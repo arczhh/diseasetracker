@@ -1,15 +1,20 @@
 package com.confused.disease_tracker;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
+import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +39,7 @@ public class SplashScreen extends AppCompatActivity {
         Setting.setWindow(this);
         sqLiteDatabase = new DatabaseHelper(this);
         hospitalLocation();
+        patient();
         final FirebaseAuth fAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = fAuth.getCurrentUser();
         new Handler().postDelayed(new Runnable() {
@@ -58,6 +64,7 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void hospitalLocation() {
+        sqLiteDatabase.dropHospital();
         db.collection("application").document("hospital")
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -104,5 +111,44 @@ public class SplashScreen extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void patient(){
+        sqLiteDatabase.dropPatientLocation();
+        sqLiteDatabase.dropPatient();
+        db.collection("patient")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (final QueryDocumentSnapshot patientSnap : task.getResult()) {
+                                sqLiteDatabase.insertPatient(Integer.parseInt(patientSnap.getId()),patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
+                                db.collection("patient/" + patientSnap.getId() + "/location")
+                                        //.whereArrayContains(String.valueOf(java.time.LocalDate.now()), "timestamp")
+                                        .orderBy("timestamp")
+                                        .get()
+                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> locTask) {
+                                                if (locTask.isSuccessful()) {
+                                                    for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
+                                                        String[] split = patientLoc.getString("timestamp").split(" ");
+                                                        String timestamp = split[0]+"T"+split[1];
+                                                        sqLiteDatabase.insertPatientLocation(Integer.parseInt(patientSnap.getId()), Integer.parseInt(patientLoc.getId()),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
+                                                    }
+                                                } else {
+                                                    Log.d("TAG", "Error getting documents: ", locTask.getException());
+                                                }
+                                            }
+                                        });
+
+                            }
+                        } else {
+                            Log.d("TAG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
     }
 }

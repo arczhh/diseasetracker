@@ -28,6 +28,7 @@ import androidx.core.app.NotificationCompat;
 import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
+import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,9 +38,10 @@ public class LocationService extends Service {
     private LocationListener listener;
     private LocationManager locationManager;
     private DatabaseHelper sqLiteDatabase;
-    public long refreshTime = 60*1000*5;
-    private int majorDec = 3;
-    private int minorDec = 5;
+    private long refreshTime = 60*1000*5;
+    private int minDistance = 10;
+    private int[] majorDec = {3, 4};
+    private int[] minorDec = {3, 3};
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     @Nullable
@@ -96,9 +98,10 @@ public class LocationService extends Service {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, refreshTime, 3, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, refreshTime, minDistance, listener);
         }else{
             stopService(new Intent(this, LocationService.class));
+            startActivity(new Intent(this, Login.class));
         }
     }
 
@@ -152,7 +155,7 @@ public class LocationService extends Service {
         Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
         boolean flag = false;
         while (lastLoc.moveToNext()){
-            flag = Setting.covertDecimal(lastLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng, majorDec) != 0;
+            flag = Setting.covertDecimal(lastLoc.getDouble(2), majorDec[0])-Setting.covertDecimal(lat, majorDec[0]) != 0 && Setting.covertDecimal(lastLoc.getDouble(3),majorDec[1])-Setting.covertDecimal(lng, majorDec[1]) != 0;
         }
         return flag;
     }
@@ -161,7 +164,7 @@ public class LocationService extends Service {
         Cursor lastLoc = sqLiteDatabase.getUserLastLocationData(user.getUid());
         boolean flag = false;
         while (lastLoc.moveToNext()){
-            flag = Setting.covertDecimal(lastLoc.getDouble(2), minorDec)-Setting.covertDecimal(lat, minorDec) != 0 && Setting.covertDecimal(lastLoc.getDouble(3), minorDec)-Setting.covertDecimal(lng, minorDec) != 0;
+            flag = Setting.covertDecimal(lastLoc.getDouble(2), minorDec[0])-Setting.covertDecimal(lat, minorDec[0]) != 0 && Setting.covertDecimal(lastLoc.getDouble(3), minorDec[1])-Setting.covertDecimal(lng, minorDec[1]) != 0;
         }
         return flag;
     }
@@ -170,7 +173,7 @@ public class LocationService extends Service {
         Cursor lastMajorLoc = sqLiteDatabase.getUserLastMajorLocationData(user.getUid());
         boolean flag = false;
         while (lastMajorLoc.moveToNext()){
-            flag = Setting.covertDecimal(lastMajorLoc.getDouble(2), majorDec)-Setting.covertDecimal(lat, majorDec) != 0 && Setting.covertDecimal(lastMajorLoc.getDouble(3),majorDec)-Setting.covertDecimal(lng, majorDec) != 0;
+            flag = Setting.covertDecimal(lastMajorLoc.getDouble(2), majorDec[0])-Setting.covertDecimal(lat, majorDec[0]) != 0 && Setting.covertDecimal(lastMajorLoc.getDouble(3),majorDec[1])-Setting.covertDecimal(lng, majorDec[1]) != 0;
         }
         return flag;
     }

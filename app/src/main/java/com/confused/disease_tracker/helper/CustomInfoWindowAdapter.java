@@ -25,6 +25,8 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         if(!title.equals("")){
             tvTitle.setText(title);
+        }else{
+            tvTitle.setText("Empty");
         }
 
         String snippet = marker.getSnippet();
