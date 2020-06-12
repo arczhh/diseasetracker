@@ -86,7 +86,7 @@ public class Login extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
-                            sessionManager.createSession(email,password);
+                            sessionManager.createSession(email, password, SessionManager.ID);
                             Toast.makeText(Login.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(getApplicationContext(), EmptyActivity.class));
                         }else {

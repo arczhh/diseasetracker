@@ -25,6 +25,10 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,13 +42,13 @@ public class MainActivity extends AppCompatActivity {
         checkUserLocationPermission();
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+
         //test
         sessionManager = new SessionManager(this);
         sessionManager.checkLogin();
         HashMap<String, String> user = sessionManager.getUserDetail();
-        String mName = user.get(sessionManager.EMAIL);
-        String mPassword = user.get(sessionManager.PASSWORD);
-
+        String mName = user.get(SessionManager.EMAIL);
+        String mPassword = user.get(SessionManager.PASSWORD);
 
     }
 

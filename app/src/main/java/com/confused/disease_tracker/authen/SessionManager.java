@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.confused.disease_tracker.EmptyActivity;
-import com.confused.disease_tracker.MainActivity;
 
 import java.util.HashMap;
 
@@ -20,6 +19,7 @@ public class SessionManager {
     private static final String LOGIN = "IS_LOGIN";
     public static final String EMAIL = "EMAIL";
     public static final String PASSWORD = "PASSWORD";
+    public static final String ID = "ID";
 
     public SessionManager(Context context) {
         this.context = context;
@@ -27,12 +27,14 @@ public class SessionManager {
         editor = sharedPreferences.edit();
     }
 
-    public void createSession(String email, String password) {
+    public void createSession(String email, String password, String id) {
 
         editor.putBoolean(LOGIN, true);
         editor.putString(EMAIL, email);
         editor.putString(PASSWORD, password);
+        editor.putString(ID, id);
         editor.apply();
+        editor.commit();
 
     }
 
@@ -54,7 +56,7 @@ public class SessionManager {
         HashMap<String, String> user = new HashMap<>();
         user.put(EMAIL, sharedPreferences.getString(EMAIL, null));
         user.put(PASSWORD, sharedPreferences.getString(PASSWORD, null));
-
+        user.put(ID, sharedPreferences.getString(ID, null));
 
         return user;
     }
@@ -66,6 +68,5 @@ public class SessionManager {
         Intent i = new Intent(context, Login.class);
         context.startActivity(i);
         ((EmptyActivity) context).finish();
-
     }
 }
