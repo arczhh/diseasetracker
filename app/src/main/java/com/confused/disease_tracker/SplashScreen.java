@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
@@ -15,7 +16,9 @@ import android.widget.Toast;
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.datatype.Patient;
+import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,8 +41,8 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         Setting.setWindow(this);
         sqLiteDatabase = new DatabaseHelper(this);
+        downloadPatient();
         hospitalLocation();
-        patient();
         final FirebaseAuth fAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = fAuth.getCurrentUser();
         new Handler().postDelayed(new Runnable() {
@@ -113,10 +116,11 @@ public class SplashScreen extends AppCompatActivity {
         });
     }
 
-    public void patient(){
-        sqLiteDatabase.dropPatientLocation();
+    public void downloadPatient(){
         sqLiteDatabase.dropPatient();
+        sqLiteDatabase.dropPatientLocation();
         db.collection("patient")
+                .whereEqualTo("patientDisease","โควิด-19")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -124,7 +128,8 @@ public class SplashScreen extends AppCompatActivity {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (final QueryDocumentSnapshot patientSnap : task.getResult()) {
-                                sqLiteDatabase.insertPatient(Integer.parseInt(patientSnap.getId()),patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
+                                Log.d("Patient/Download", patientSnap.getId() + "," + patientSnap.getString("patientName") + ", " + patientSnap.getString("patientDisease") + ", " + patientSnap.getString("patientStatus"));
+                                sqLiteDatabase.insertPatient(Integer.parseInt(patientSnap.getId()), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
                                 db.collection("patient/" + patientSnap.getId() + "/location")
                                         //.whereArrayContains(String.valueOf(java.time.LocalDate.now()), "timestamp")
                                         .orderBy("timestamp")
@@ -143,7 +148,6 @@ public class SplashScreen extends AppCompatActivity {
                                                 }
                                             }
                                         });
-
                             }
                         } else {
                             Log.d("TAG", "Error getting documents: ", task.getException());
@@ -151,4 +155,5 @@ public class SplashScreen extends AppCompatActivity {
                     }
                 });
     }
+
 }

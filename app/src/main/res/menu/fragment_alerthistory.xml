@@ -18,6 +18,7 @@ tools:context=".MainActivity">
             android:layout_height="wrap_content"
             android:layout_gravity="top"
             android:layout_alignParentTop="true"
+            android:visibility="gone"
             app:menu="@menu/top_navigation"
             android:background="?android:attr/windowBackground"
             />

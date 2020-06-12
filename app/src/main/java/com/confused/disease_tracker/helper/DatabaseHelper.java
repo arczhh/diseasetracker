@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -153,8 +154,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("STATUS", status);
         long result = sqLiteDatabase.insert(TAB3, null, contentValues);
         if(result == -1){
+            Log.d("Patient/Insert",pid+", "+name+", "+disease+", "+status+": false");
             return false;
         }else{
+            Log.d("Patient/Insert",pid+", "+name+", "+disease+", "+status+": true");
             return true;
         }
     }
@@ -185,10 +188,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Cursor getPatientLocationData(){
+    public Cursor getPatientLocationData(int pid){
         String d1 = String.valueOf(java.time.LocalDate.now().plusDays(1));
         String d2 = String.valueOf(java.time.LocalDate.now().minusDays(15));
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = "+pid+" AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
         return res;
     }
 
