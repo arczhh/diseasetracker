@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-import com.confused.disease_tracker.EmptyActivity;
-
 import java.util.HashMap;
 
 public class SessionManager {
