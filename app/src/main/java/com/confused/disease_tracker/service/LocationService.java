@@ -39,7 +39,7 @@ public class LocationService extends Service {
     private LocationManager locationManager;
     private DatabaseHelper sqLiteDatabase;
     private long refreshTime = 60*1000*5;
-    private int minDistance = 10;
+    private int minDistance = 150;
     private int[] majorDec = {3, 4};
     private int[] minorDec = {3, 3};
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -57,10 +59,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DatabaseHelper sqLiteDatabase;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("LongLogTag")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         @SuppressLint("ResourceType") View view = inflater.inflate(R.menu.fragment_home, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -97,6 +100,14 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                 }
             }
         });
+
+        Cursor pat = sqLiteDatabase.getPatientLocationData(5);
+        if(pat.getCount() < 0){
+            Log.d("Database/Patient Location","No data found.");
+        }
+        while (pat.moveToNext()) {
+            Log.d("Database/Patient Location", pat.getString(0) + "/" + pat.getString(1) + ": " + pat.getString(2)+","+pat.getString(3)+" TIMESTAMP: "+pat.getString(4));
+        }
         return view;
     }
 
