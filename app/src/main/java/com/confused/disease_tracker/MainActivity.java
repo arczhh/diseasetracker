@@ -1,12 +1,10 @@
 package com.confused.disease_tracker;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 
 import com.confused.disease_tracker.service.LocationService;
@@ -60,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                             selectedFragment = new AlertHistoryFragment();
                             break;
                         case R.id.nav_setting:
-                            selectedFragment = new SettingFlagment();
+                            selectedFragment = new SettingFragment();
                             break;
                     }
 

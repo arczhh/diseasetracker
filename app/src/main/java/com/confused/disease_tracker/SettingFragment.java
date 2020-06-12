@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 
-public class SettingFlagment extends Fragment {
+public class SettingFragment extends Fragment {
 
     @SuppressLint("ResourceType")
     @Nullable
