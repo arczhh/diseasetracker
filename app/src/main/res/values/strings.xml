@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">disease-tracker</string>
+    <string name="app_name">Disease Tracker</string>
     <string name="app">Disease Tracker</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_empty">EmptyActivity</string>

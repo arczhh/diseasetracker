@@ -3,17 +3,11 @@ package com.confused.disease_tracker;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +15,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
+import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.DialogPopup;
 import com.confused.disease_tracker.helper.FontManager;
 import com.google.android.gms.common.ConnectionResult;
@@ -37,6 +40,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -52,7 +57,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     private final static int Request_User_Location_Code = 99;
     private View locationButton;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private DatabaseHelper sqLiteDatabase;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("LongLogTag")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -66,6 +74,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             ft.replace(R.id.map, mapFragment).commit();
         }
         mapFragment.getMapAsync(this);
+        sqLiteDatabase = new DatabaseHelper(getContext());
         locationButton = (View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent();
         // Change the visibility of my location button
         if(locationButton != null){
@@ -91,19 +100,27 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                 }
             }
         });
+
+        Cursor pat = sqLiteDatabase.getPatientLocationData(5);
+        if(pat.getCount() < 0){
+            Log.d("Database/Patient Location","No data found.");
+        }
+        while (pat.moveToNext()) {
+            Log.d("Database/Patient Location", pat.getString(0) + "/" + pat.getString(1) + ": " + pat.getString(2)+","+pat.getString(3)+" TIMESTAMP: "+pat.getString(4));
+        }
         return view;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868,100.493645 ),5));
+        patientLocation();
+        getHospitalData();
         if (ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
-            mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(getContext()));
-            patientLocation();
-            hospitalLocation();
         }
     }
 
@@ -141,9 +158,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
         mLocationRequest.setFastestInterval(1100);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        /*if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, mLocationRequest, this);
-        }
+        }*/
     }
 
     @Override
@@ -163,7 +180,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             currentUserLocationMarker.remove();
         }
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
         if(googleApiClient != null){
@@ -178,7 +194,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+                            for (final QueryDocumentSnapshot document : task.getResult()) {
                                 db.collection("patient/" + document.getId() + "/location")
                                         .orderBy("timestamp")
                                         .limit(1)
@@ -191,8 +207,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
 
                                                         mMap.addMarker(new MarkerOptions()
                                                                 .position(new LatLng((double) location.getData().get("lat"), (double) location.getData().get("lng")))
-                                                                .title((String) location.getData().get("timestamp"))
-                                                                .snippet("Test")
+                                                                .title((String) document.getData().get("patientName"))
+                                                                .snippet((String) document.getData().get("patientStatus")+" - "+location.getData().get("timestamp"))
                                                                 .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_patient)));
                                                     }
                                                 } else {
@@ -208,45 +224,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                 });
     }
 
-    private void hospitalLocation() {
-        db.collection("hospital")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (final QueryDocumentSnapshot hospital : task.getResult()) {
-                                db.collection("hospital/" + hospital.getId() + "/responsible")
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    String respDisease = "โรคที่รับผิดชอบ: ";
-                                                    int strLength = respDisease.length();
-                                                    for (QueryDocumentSnapshot resp : task.getResult()) {
-                                                        respDisease += resp.getData().get("diseaseName")+", ";
-                                                    }
-                                                    if(respDisease.length() == strLength){
-                                                        respDisease = "ไม่พบข้อมูล";
-                                                    }else{
-                                                        respDisease = respDisease.substring(0, respDisease.length() - 2);
-                                                    }
-                                                    mMap.addMarker(new MarkerOptions()
-                                                            .position(new LatLng((double) hospital.getData().get("lat"), (double) hospital.getData().get("lng")))
-                                                            .title((String) hospital.getData().get("hospitalName"))
-                                                            .snippet(respDisease)
-                                                            .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_local_hospital_black_24dp)));
-                                                } else {
-                                                    Log.d("TAG", "Error getting documents: ", task.getException());
-                                                }
-                                            }
-                                        });
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+    public void getHospitalData(){
+        Cursor res = sqLiteDatabase.getHospitalData();
+        if(res.getCount() == 0){
+            return;
+        }
+        while (res.moveToNext()){
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(res.getDouble(2), res.getDouble(3)))
+                    .title(res.getString(1))
+                    .snippet(res.getString(4))
+                    .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
+        }
     }
 }
