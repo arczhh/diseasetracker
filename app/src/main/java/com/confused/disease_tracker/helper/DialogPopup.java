@@ -25,6 +25,6 @@ public class DialogPopup extends DialogFragment {
         getDialog().getWindow().getWindowManager().getDefaultDisplay().getMetrics(dm);
         int width = dm.widthPixels;
         int height = dm.heightPixels;
-        getDialog().getWindow().setLayout((int)(width*.8), (int)(height*.4));
+        getDialog().getWindow().setLayout((int)(width*.8), (int)(height*.3));
     }
 }
