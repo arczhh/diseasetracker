@@ -35,7 +35,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB1+" (" +
                 "LID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "USERID VARCHAR(80),"+
+                "USERID VARCHAR(40),"+
                 "LAT DOUBLE," +
                 "LNG DOUBLE,"+
                 "TIMESTAMP VARCHAR2(50),"+
@@ -49,14 +49,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "DISEASE VARCHAR2(1000)"+
                 ")");
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB3+"(" +
-                "PID INTEGER, " +
+                "PID VARCHAR2(40), " +
                 "NAME VARCHAR2(80),"+
                 "DISEASE VARCHAR2(80)," +
                 "STATUS VARCHAR2(80)"+
                 ")");
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB4+"(" +
-                "PID INTEGER," +
-                "LID INTEGER, " +
+                "PID VARCHAR2(40)," +
+                "LID VARCHAR2(40), " +
                 "LAT DOUBLE," +
                 "LNG DOUBLE,"+
                 "TIMESTAMP VARCHAR2(50)"+
@@ -146,7 +146,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Tab3
-    public boolean insertPatient(int pid, String name, String disease, String status){
+    public boolean insertPatient(String pid, String name, String disease, String status){
         ContentValues contentValues = new ContentValues();
         contentValues.put("PID", pid);
         contentValues.put("NAME", name);
@@ -172,7 +172,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Tab4
-    public boolean insertPatientLocation(int pid, int lid, double lat, double lng, String timestamp){
+    public boolean insertPatientLocation(String pid, String lid, double lat, double lng, String timestamp){
         ContentValues contentValues = new ContentValues();
         contentValues.put("PID", pid);
         contentValues.put("LID", lid);

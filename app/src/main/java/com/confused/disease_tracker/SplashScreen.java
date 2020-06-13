@@ -129,7 +129,7 @@ public class SplashScreen extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             for (final QueryDocumentSnapshot patientSnap : task.getResult()) {
                                 Log.d("Patient/Download", patientSnap.getId() + "," + patientSnap.getString("patientName") + ", " + patientSnap.getString("patientDisease") + ", " + patientSnap.getString("patientStatus"));
-                                sqLiteDatabase.insertPatient(Integer.parseInt(patientSnap.getId()), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
+                                sqLiteDatabase.insertPatient(patientSnap.getId(), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
                                 db.collection("patient/" + patientSnap.getId() + "/location")
                                         //.whereArrayContains(String.valueOf(java.time.LocalDate.now()), "timestamp")
                                         .orderBy("timestamp")
@@ -141,7 +141,7 @@ public class SplashScreen extends AppCompatActivity {
                                                     for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
                                                         String[] split = patientLoc.getString("timestamp").split(" ");
                                                         String timestamp = split[0]+"T"+split[1];
-                                                        sqLiteDatabase.insertPatientLocation(Integer.parseInt(patientSnap.getId()), Integer.parseInt(patientLoc.getId()),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
+                                                        sqLiteDatabase.insertPatientLocation(patientSnap.getId(), patientLoc.getId(),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
                                                     }
                                                 } else {
                                                     Log.d("TAG", "Error getting documents: ", locTask.getException());
