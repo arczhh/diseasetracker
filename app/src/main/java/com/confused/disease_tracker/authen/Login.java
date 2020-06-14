@@ -93,8 +93,10 @@ public class Login extends AppCompatActivity {
                             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
                             FirebaseUser user = fAuth.getCurrentUser();
                             if(!user.isEmailVerified()){
+                                finish();
                                 startActivity(new Intent(getApplicationContext(), Profile.class));
                             }else{
+                                finish();
                                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                             }
                         }else {

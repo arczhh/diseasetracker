@@ -11,6 +11,7 @@
         android:id="@+id/backBtn"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:visibility="visible"
         android:src="@drawable/ic_arrow_back_black_24dp"
         tools:ignore="MissingConstraints" />
 

@@ -54,7 +54,8 @@ public class HistoryListFragment extends Fragment {
         myUser = user();
         patients = patient();
         //viewPatientLocationData();
-        viewCalculateData(distance, min);
+        //viewCalculateData(distance, min);
+        patientListPure();
         return inf;
     }
 
@@ -145,5 +146,22 @@ public class HistoryListFragment extends Fragment {
             Log.d("Database/Patient", pat.getString(1) + ", " + pat.getString(2) + ", " + pat.getString(3));
         }
         return patients;
+    }
+
+    @SuppressLint("LongLogTag")
+    public void patientListPure(){
+        Cursor pat = sqLiteDatabase.getPatientData();
+        if(pat.getCount() < 0){
+            Log.d("Database/Patient","No data found.");
+        }
+        while (pat.moveToNext()) {
+            strings.add((pat.getString(1)+", "+pat.getString(2)+", "+pat.getString(3)));
+            Cursor patLoc = sqLiteDatabase.getPatientLocationData(pat.getInt(0));
+            while (patLoc.moveToNext()){
+                strings.add(patLoc.getString(0) + ", " + patLoc.getString(1) + ", " + patLoc.getString(2)+ ", " + patLoc.getString(3)+ ", " + patLoc.getString(4));
+            }
+        }
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, strings);
+        listView.setAdapter(arrayAdapter);
     }
 }

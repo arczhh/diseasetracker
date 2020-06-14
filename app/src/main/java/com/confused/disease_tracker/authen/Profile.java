@@ -88,7 +88,7 @@ public class Profile extends AppCompatActivity {
         user = fAuth.getCurrentUser();
 
        if(!user.isEmailVerified()) {
-
+           backBtn.setVisibility(View.GONE);
            verifyMsgTxtView.setVisibility(View.VISIBLE);
            resendCodeBtn.setVisibility(View.VISIBLE);
 

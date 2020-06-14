@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.TimeZone;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +20,7 @@ import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.confused.disease_tracker.service.DetectorService;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,12 +32,22 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+
+import java.text.ParseException;
+import java.util.Date;
+
+
 public class SplashScreen extends AppCompatActivity {
 
     private static int SPLASH_TIME_OUT = 4000;
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +78,7 @@ public class SplashScreen extends AppCompatActivity {
             }
         }, SPLASH_TIME_OUT);
     }
+
 
     private void hospitalLocation() {
         sqLiteDatabase.dropHospital();
@@ -130,24 +144,30 @@ public class SplashScreen extends AppCompatActivity {
                             for (final QueryDocumentSnapshot patientSnap : task.getResult()) {
                                 Log.d("Patient/Download", patientSnap.getId() + "," + patientSnap.getString("patientName") + ", " + patientSnap.getString("patientDisease") + ", " + patientSnap.getString("patientStatus"));
                                 sqLiteDatabase.insertPatient(patientSnap.getId(), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
-                                db.collection("patient/" + patientSnap.getId() + "/location")
-                                        //.whereArrayContains(String.valueOf(java.time.LocalDate.now()), "timestamp")
-                                        .orderBy("timestamp")
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> locTask) {
-                                                if (locTask.isSuccessful()) {
-                                                    for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
-                                                        String[] split = patientLoc.getString("timestamp").split(" ");
-                                                        String timestamp = split[0]+"T"+split[1];
-                                                        sqLiteDatabase.insertPatientLocation(patientSnap.getId(), patientLoc.getId(),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
+                                try {
+                                    long[] unixTimestamp = DetectorService.unixTimestamp();
+                                    db.collection("patient/" + patientSnap.getId() + "/location")
+                                            .orderBy("unixTimestamp")
+                                            .whereLessThanOrEqualTo("unixTimestamp", unixTimestamp[0])
+                                            .whereGreaterThanOrEqualTo("unixTimestamp", unixTimestamp[1])
+                                            .get()
+                                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<QuerySnapshot> locTask) {
+                                                    if (locTask.isSuccessful()) {
+                                                        for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
+                                                            String[] split = patientLoc.getString("timestamp").split(" ");
+                                                            String timestamp = split[0]+"T"+split[1];
+                                                            sqLiteDatabase.insertPatientLocation(patientSnap.getId(), patientLoc.getId(),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
+                                                        }
+                                                    } else {
+                                                        Log.d("TAG", "Error getting documents: ", locTask.getException());
                                                     }
-                                                } else {
-                                                    Log.d("TAG", "Error getting documents: ", locTask.getException());
                                                 }
-                                            }
-                                        });
+                                            });
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         } else {
                             Log.d("TAG", "Error getting documents: ", task.getException());
