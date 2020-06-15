@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.confused.disease_tracker.service.DetectorService;
 import com.confused.disease_tracker.service.LocationService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.jakewharton.threetenabp.AndroidThreeTen;
@@ -35,8 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Setting.setWindow(this);
         AndroidThreeTen.init(this);
-        LocationService mYourService = new LocationService();
-        Intent mServiceIntent = new Intent(this, mYourService.getClass());
+        startService();
 
         mSwitch = (Switch) findViewById(R.id.switch1);
         mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -49,10 +49,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        if (!isMyServiceRunning(mYourService.getClass())) {
-            startService(mServiceIntent);
-        }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
@@ -92,6 +88,21 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
             };
+
+    private void startService(){
+
+        LocationService mLocationService = new LocationService();
+        Intent mServiceIntent2 = new Intent(this, mLocationService.getClass());
+        if (!isMyServiceRunning(mLocationService.getClass())) {
+            startService(mServiceIntent2);
+        }
+
+        DetectorService mDetectorService = new DetectorService();
+        Intent mServiceIntent3 = new Intent(this, mDetectorService.getClass());
+        if (!isMyServiceRunning(mDetectorService.getClass())) {
+            startService(mServiceIntent3);
+        }
+    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
