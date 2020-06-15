@@ -38,18 +38,6 @@ public class MainActivity extends AppCompatActivity {
         LocationService mYourService = new LocationService();
         Intent mServiceIntent = new Intent(this, mYourService.getClass());
 
-        mSwitch = (Switch) findViewById(R.id.switch1);
-        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(mSwitch.isChecked() == true){
-                    Toast.makeText(getBaseContext(), "ON", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(getBaseContext(), "OFF", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
         if (!isMyServiceRunning(mYourService.getClass())) {
             startService(mServiceIntent);
         }
@@ -62,6 +50,18 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new HomeFragment()).commit();
         }
+
+        mSwitch = (Switch) findViewById(R.id.switch1);
+        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(mSwitch.isChecked() == true){
+                    Toast.makeText(getBaseContext(), "ON", Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(getBaseContext(), "OFF", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
     }
 
