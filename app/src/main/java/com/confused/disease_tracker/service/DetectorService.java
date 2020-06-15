@@ -126,15 +126,13 @@ public class DetectorService extends Service {
         startForeground(2, notification);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static long[] unixTimestamp() throws ParseException {
         long[] timestamp;
-        DecimalFormat formatter = new DecimalFormat("00");
         Date date1 = new Date();
         LocalDateTime minusDate = LocalDateTime.now().minusDays(14);
-        Date date2 = new Date(minusDate.getYear(), minusDate.getMonthValue(), minusDate.getDayOfMonth(),minusDate.getHour(), minusDate.getMinute());
-        Log.d("Unix", "Time1: " + date1);
-        Log.d("Unix", "Time2: " + date2);
+        Date date2 = new Date(minusDate.getYear()-1900, minusDate.getMonthValue()-1, minusDate.getDayOfMonth(),minusDate.getHour(), minusDate.getMinute());
+        Log.d("Unix", "Time1: " + date1.getTime());
+        Log.d("Unix", "Time2: " + date2.getTime());
         timestamp = new long[]{date1.getTime(), date2.getTime()};
         return timestamp;
     }

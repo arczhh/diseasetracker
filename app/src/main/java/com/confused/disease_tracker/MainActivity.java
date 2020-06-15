@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         }
-        Log.i ("Service status", "Not running");
+        Log.i ("Service status", "Not running "+serviceClass.getName());
         return false;
     }
 }

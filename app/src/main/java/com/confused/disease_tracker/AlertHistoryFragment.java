@@ -59,6 +59,7 @@ public class AlertHistoryFragment extends Fragment {
         View inf = inflater.inflate(R.menu.history_list, container, false);
         listView = (ListView) inf.findViewById(R.id.listView);
         alertHistoryListView();
+        //patientloc();
         return inf;
     }
 
@@ -97,6 +98,26 @@ public class AlertHistoryFragment extends Fragment {
                 startActivity(intent);
             }
         });
+    }
+
+    public void patientloc(){
+        Cursor pat = sqLiteDatabase.getPatientData();
+        if(pat.getCount() < 0){
+            Log.d("Database/pat","No data found.");
+        }
+        while (pat.moveToNext()) {
+            strings.add(pat.getString(0)+", "+pat.getString(1)+", "+pat.getString(2)+", "+pat.getString(3));
+            Cursor loc = sqLiteDatabase.getPatientLocationData(pat.getString(0));
+            if(loc.getCount() < 0){
+                Log.d("Database/patloc","No data found.");
+            }
+            while (loc.moveToNext()) {
+                strings.add(loc.getString(0)+", "+loc.getString(1)+", "+loc.getString(2)+", "+loc.getString(3));
+            }
+        }
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, strings);
+        listView.setAdapter(arrayAdapter);
+        listView.setDivider(null);
     }
 
 }

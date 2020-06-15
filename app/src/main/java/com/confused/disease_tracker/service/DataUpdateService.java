@@ -33,9 +33,8 @@ import java.util.TimerTask;
 
 public class DataUpdateService  extends Service {
     private DatabaseHelper sqLiteDatabase;
-    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private int period = 1000*60*30;
+    private int period = 1000*60*1;
 
     @Nullable
     @Override
@@ -43,10 +42,8 @@ public class DataUpdateService  extends Service {
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onCreate() {
         sqLiteDatabase = new DatabaseHelper(getApplication());
-        if(!user.isAnonymous()){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
             else
@@ -63,11 +60,6 @@ public class DataUpdateService  extends Service {
 
             // schedule the task to run starting now and then every hour...
             timer.schedule (hourlyTask, 0l, period);   // 1000*10*60 every 10 minute
-
-        }else{
-            stopService(new Intent(this, DataUpdateService.class));
-            startActivity(new Intent(this, Login.class));
-        }
     }
 
     @Override
@@ -103,7 +95,6 @@ public class DataUpdateService  extends Service {
                 .whereEqualTo("patientDisease","โควิด-19")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
@@ -112,6 +103,7 @@ public class DataUpdateService  extends Service {
                                 sqLiteDatabase.insertPatient(patientSnap.getId(), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
                                 try {
                                     long[] unixTimestamp = DetectorService.unixTimestamp();
+                                    Log.d("Patient/Unix time", unixTimestamp[0]+", "+unixTimestamp[1]);
                                     db.collection("patient/" + patientSnap.getId() + "/location")
                                             .orderBy("unixTimestamp")
                                             .whereLessThanOrEqualTo("unixTimestamp", unixTimestamp[0])
@@ -124,6 +116,7 @@ public class DataUpdateService  extends Service {
                                                         for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
                                                             String[] split = patientLoc.getString("timestamp").split(" ");
                                                             String timestamp = split[0]+"T"+split[1];
+                                                            Log.d("PatientLoc/Download", patientSnap.getId()+","+patientLoc.getId()+","+patientLoc.getDouble("lat")+","+ patientLoc.getDouble("lng")+","+timestamp);
                                                             sqLiteDatabase.insertPatientLocation(patientSnap.getId(), patientLoc.getId(),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
                                                         }
                                                     } else {

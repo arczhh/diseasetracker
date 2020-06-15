@@ -198,11 +198,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if(result == -1){
             return false;
         }else{
+            Log.d("PatientLoc/Insert",pid+", "+lid+", "+lat+", "+lng+", "+timestamp+" : false");
             return true;
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public Cursor getPatientLocationData(String pid){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
         String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
