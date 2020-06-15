@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Switch;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -22,6 +23,7 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.ArrayList;
 
 public class SettingFlagment extends Fragment {
+
 
     @SuppressLint("ResourceType")
     @Nullable
@@ -40,5 +42,6 @@ public class SettingFlagment extends Fragment {
             startActivity(new Intent(getContext(), Profile.class));
         }
     };
+
 
 }
