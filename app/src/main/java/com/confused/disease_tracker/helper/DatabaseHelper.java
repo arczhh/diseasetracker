@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import com.confused.disease_tracker.Setting;
 
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
@@ -24,6 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAB2 = "hospital";
     private static final String TAB3 = "patient";
     private static final String TAB4 = "patientlocation";
+    private static final String TAB5 = "alert_history";
     private SQLiteDatabase sqLiteDatabase;
 
     public DatabaseHelper(Context context) {
@@ -60,7 +62,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "LAT DOUBLE," +
                 "LNG DOUBLE,"+
                 "TIMESTAMP VARCHAR2(50)"+
-                //"PRIMARY KEY (PID, LID)"+
+                ")");
+        sqLiteDatabase.execSQL("CREATE TABLE "+TAB5+"(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "UID VARCHAR2(40)," +
+                "PID VARCHAR2(40)," +
+                "USR_LAT DOUBLE," +
+                "USR_LNG DOUBLE,"+
+                "PAT_LAT DOUBLE," +
+                "PAT_LNG DOUBLE,"+
+                "TIMESTAMP VARCHAR2(50),"+
+                "ALERT VARCHAR2(200),"+
+                "RISK INT(1),"+
+                "IS_READ INT(1)"+
                 ")");
     }
 
@@ -70,6 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB2);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB3);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB4);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB5);
         onCreate(sqLiteDatabase);
     }
 
@@ -115,8 +130,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public Cursor getUserLocationDataByDate(String USERID){
-        String d1 = String.valueOf(java.time.LocalDate.now().plusDays(1));
-        String d2 = String.valueOf(java.time.LocalDate.now().minusDays(15));
+        String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY USERID, LID",null);
         return res;
     }
@@ -188,17 +203,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Cursor getPatientLocationData(int pid){
-        String d1 = String.valueOf(java.time.LocalDate.now().plusDays(1));
-        String d2 = String.valueOf(java.time.LocalDate.now().minusDays(15));
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = "+pid+" AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
+    public Cursor getPatientLocationData(String pid){
+        String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = '"+pid+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
         return res;
     }
-
 
     public void dropPatientLocation(){
         sqLiteDatabase.execSQL("DELETE FROM "+TAB4);
     }
 
+    // Tab5
+    public boolean insertAlertHistory(String uid, String pid, double usr_lat, double usr_lng, double pat_lat, double pat_lng, String timestamp, String alert, int risk){
+        Log.d("AlertHistory/Insert",uid+", "+pid+", "+usr_lat+", "+usr_lng+", "+pat_lat+", "+pat_lng+", "+timestamp+", "+alert+", "+risk);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("UID", uid);
+        contentValues.put("PID", pid);
+        contentValues.put("USR_LAT", usr_lat);
+        contentValues.put("USR_LNG", usr_lng);
+        contentValues.put("PAT_LAT", pat_lat);
+        contentValues.put("PAT_LNG", pat_lng);
+        contentValues.put("TIMESTAMP", timestamp);
+        contentValues.put("ALERT", alert);
+        contentValues.put("RISK", risk);
+        contentValues.put("IS_READ", 0);
+        long result = sqLiteDatabase.insert(TAB5, null, contentValues);
+        if(result == -1){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public Cursor getAlertHistory(String uid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"'",null);
+        return res;
+    }
+
+    public Cursor getAlertHistory(String uid, String pid, double usr_lat, double usr_lng, double pat_lat, double pat_lng ){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"' AND PID = '"+pid+"' AND USR_LAT = "+usr_lat+" AND USR_LNG = "+usr_lng+" AND PAT_LAT = "+pat_lat+" AND PAT_LNG = "+pat_lng ,null);
+        return res;
+    }
+
+    public Cursor getAlertHistory(int id){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE ID = "+id,null);
+        return res;
+    }
 
 }

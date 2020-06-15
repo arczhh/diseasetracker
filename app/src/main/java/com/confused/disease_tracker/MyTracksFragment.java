@@ -37,8 +37,6 @@ import java.util.ArrayList;
 public class MyTracksFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private DatabaseHelper sqLiteDatabase;
-    private User myUser;
-    private ArrayList<Patient> patients;
 
     @Nullable
     @Override

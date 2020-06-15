@@ -1,6 +1,7 @@
 package com.confused.disease_tracker.service;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,8 +19,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
@@ -29,9 +32,23 @@ import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
 import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.datatype.LocationChecker;
+import com.confused.disease_tracker.datatype.Patient;
+import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LocationService extends Service {
 
