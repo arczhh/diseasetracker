@@ -4,6 +4,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ActivityManager;
+import android.location.LocationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -28,6 +29,10 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     Switch mSwitch;
+    LocationManager locationManager;
+    boolean GpsStatus;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,22 @@ public class MainActivity extends AppCompatActivity {
         AndroidThreeTen.init(this);
         LocationService mYourService = new LocationService();
         Intent mServiceIntent = new Intent(this, mYourService.getClass());
+
+
+        //Function Testing Section------------------------------------------------------------
+        mSwitch = (Switch) findViewById(R.id.switch1);
+        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(mSwitch.isChecked()){
+                    Toast.makeText(getBaseContext(), "ON", Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(getBaseContext(), "OFF", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        //--------------------------------------------------------------------------------------
+
 
         if (!isMyServiceRunning(mYourService.getClass())) {
             startService(mServiceIntent);
@@ -50,18 +71,6 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new HomeFragment()).commit();
         }
-
-        mSwitch = (Switch) findViewById(R.id.switch1);
-        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(mSwitch.isChecked() == true){
-                    Toast.makeText(getBaseContext(), "ON", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(getBaseContext(), "OFF", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
     }
 
