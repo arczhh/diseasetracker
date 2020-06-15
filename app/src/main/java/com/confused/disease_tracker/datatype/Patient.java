@@ -13,18 +13,28 @@ import org.threeten.bp.LocalDateTime;
 import java.util.ArrayList;
 
 public class Patient {
+    private String patientID;
     private String patientName;
     private String patientDisease;
     private String patientStatus;
     private ArrayList<MyLocation> locations;
     ArrayList<LocationChecker> locationChecker;
 
-    public Patient(String patientName, String patientDisease, String patientStatus) {
+    public Patient(String patientID, String patientName, String patientDisease, String patientStatus) {
+        this.patientID = patientID;
         this.patientName = patientName;
         this.patientDisease = patientDisease;
         this.patientStatus = patientStatus;
         locations = new ArrayList<>();
         this.locationChecker = new ArrayList<>();
+    }
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
     }
 
     public String getPatientName() {
@@ -103,32 +113,38 @@ public class Patient {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public Patient filterByDistance(User user, double distance, int min){
+    public Patient filterByDistance(User user, double dist1, double dist2, int min){
         ArrayList<MyLocation> newLocation = new ArrayList<>();
         for(MyLocation usr : user.getLocations()) {
             for(MyLocation pat : locations) {
                 double dist = AlgorithmHelper.calDistance(usr.getLatLng().latitude, usr.getLatLng().longitude, pat.getLatLng().latitude, pat.getLatLng().longitude);
-                boolean  flag = dist <= distance;
-                if(flag && AlgorithmHelper.isInRange(usr.getTimestamp(), pat.getTimestamp(), min)) {
+                boolean  flag1 = dist <= dist1 && dist > dist2;
+                boolean  flag2 = dist <= dist2;
+                if(flag1 && AlgorithmHelper.isInRange(usr.getTimestamp(), pat.getTimestamp(), min)) {
                     if(newLocation.size() != 0) {
                         if(!newLocation.contains(pat)) {
                             newLocation.add(pat);
-                            locationChecker.add(new LocationChecker(this, usr, pat, dist));
+                            locationChecker.add(new LocationChecker(this, usr, pat, dist, 0));
                         }
                     }else {
-                        locationChecker.add(new LocationChecker(this, usr, pat, dist));
+                        locationChecker.add(new LocationChecker(this, usr, pat, dist, 0));
                         newLocation.add(pat);
                     }
-
+                }else if(flag2 && AlgorithmHelper.isInRange(usr.getTimestamp(), pat.getTimestamp(), min)){
+                    if(newLocation.size() != 0) {
+                        if(!newLocation.contains(pat)) {
+                            newLocation.add(pat);
+                            locationChecker.add(new LocationChecker(this, usr, pat, dist, 1));
+                        }
+                    }else {
+                        locationChecker.add(new LocationChecker(this, usr, pat, dist, 1));
+                        newLocation.add(pat);
+                    }
                 }
             }
         }
         this.locations = newLocation;
         return this;
-    }
-
-    public void patientDownload(){
-
     }
 
 }
