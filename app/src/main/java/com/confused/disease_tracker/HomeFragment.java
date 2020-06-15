@@ -23,6 +23,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.confused.disease_tracker.datatype.LocationChecker;
+import com.confused.disease_tracker.datatype.Patient;
+import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.DialogPopup;
@@ -45,6 +48,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
     private static final long UPDATE_INTERVAL = 5000;
@@ -100,14 +105,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                 }
             }
         });
-
-        Cursor pat = sqLiteDatabase.getPatientLocationData(5);
-        if(pat.getCount() < 0){
-            Log.d("Database/Patient Location","No data found.");
-        }
-        while (pat.moveToNext()) {
-            Log.d("Database/Patient Location", pat.getString(0) + "/" + pat.getString(1) + ": " + pat.getString(2)+","+pat.getString(3)+" TIMESTAMP: "+pat.getString(4));
-        }
         return view;
     }
 

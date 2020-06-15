@@ -5,6 +5,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.icu.text.SimpleDateFormat;
@@ -20,6 +22,7 @@ import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.confused.disease_tracker.service.DataUpdateService;
 import com.confused.disease_tracker.service.DetectorService;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -31,6 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalTime;
@@ -47,14 +51,18 @@ public class SplashScreen extends AppCompatActivity {
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AndroidThreeTen.init(this);
+        DataUpdateService mDataUpdateService = new DataUpdateService();
+        Intent mServiceIntent1 = new Intent(this, mDataUpdateService.getClass());
+        if (!isMyServiceRunning(mDataUpdateService.getClass())) {
+            startService(mServiceIntent1);
+        }
         setContentView(R.layout.activity_splash_screen);
         Setting.setWindow(this);
         sqLiteDatabase = new DatabaseHelper(this);
-        downloadPatient();
         hospitalLocation();
         final FirebaseAuth fAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = fAuth.getCurrentUser();
@@ -79,6 +87,17 @@ public class SplashScreen extends AppCompatActivity {
         }, SPLASH_TIME_OUT);
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running "+serviceClass.getName());
+        return false;
+    }
 
     private void hospitalLocation() {
         sqLiteDatabase.dropHospital();
@@ -128,52 +147,6 @@ public class SplashScreen extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public void downloadPatient(){
-        sqLiteDatabase.dropPatient();
-        sqLiteDatabase.dropPatientLocation();
-        db.collection("patient")
-                .whereEqualTo("patientDisease","โควิด-19")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (final QueryDocumentSnapshot patientSnap : task.getResult()) {
-                                Log.d("Patient/Download", patientSnap.getId() + "," + patientSnap.getString("patientName") + ", " + patientSnap.getString("patientDisease") + ", " + patientSnap.getString("patientStatus"));
-                                sqLiteDatabase.insertPatient(patientSnap.getId(), patientSnap.getString("patientName"), patientSnap.getString("patientDisease"), patientSnap.getString("patientStatus"));
-                                try {
-                                    long[] unixTimestamp = DetectorService.unixTimestamp();
-                                    db.collection("patient/" + patientSnap.getId() + "/location")
-                                            .orderBy("unixTimestamp")
-                                            .whereLessThanOrEqualTo("unixTimestamp", unixTimestamp[0])
-                                            .whereGreaterThanOrEqualTo("unixTimestamp", unixTimestamp[1])
-                                            .get()
-                                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<QuerySnapshot> locTask) {
-                                                    if (locTask.isSuccessful()) {
-                                                        for (final QueryDocumentSnapshot patientLoc : locTask.getResult()) {
-                                                            String[] split = patientLoc.getString("timestamp").split(" ");
-                                                            String timestamp = split[0]+"T"+split[1];
-                                                            sqLiteDatabase.insertPatientLocation(patientSnap.getId(), patientLoc.getId(),patientLoc.getDouble("lat"), patientLoc.getDouble("lng"), timestamp);
-                                                        }
-                                                    } else {
-                                                        Log.d("TAG", "Error getting documents: ", locTask.getException());
-                                                    }
-                                                }
-                                            });
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
     }
 
 }
