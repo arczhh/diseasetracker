@@ -40,8 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "USERID VARCHAR(40),"+
                 "LAT DOUBLE," +
                 "LNG DOUBLE,"+
-                "TIMESTAMP VARCHAR2(50),"+
-                "isMajor INT(1)"+
+                "TIMESTAMP VARCHAR2(50)"+
                 ")");
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB2+"(" +
                 "HOSPITALID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -89,7 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Tab1
-    public boolean insertUserLocation(String userid, double lat, double lng, int isMajor){
+    public boolean insertUserLocation(String userid, double lat, double lng){
         LocalTime localTimeInBangkok = LocalTime.now(ZoneId.of("Asia/Bangkok"));
         LocalDate localDateInBangkok = LocalDate.now(ZoneId.of("Asia/Bangkok"));
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -99,7 +98,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("LAT", lat);
         contentValues.put("LNG", lng);
         contentValues.put("TIMESTAMP", localDateInBangkok.format(dateFormat)+"T"+localTimeInBangkok.format(timeFormat));
-        contentValues.put("isMajor", isMajor);
         long result = sqLiteDatabase.insert(TAB1, null, contentValues);
         if(result == -1){
             return false;
@@ -114,18 +112,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("LAT", lat);
         contentValues.put("LNG", lng);
         contentValues.put("TIMESTAMP", timestamp);
-        contentValues.put("isMajor", 1);
         long result = sqLiteDatabase.insert(TAB1, null, contentValues);
         if(result == -1){
             return false;
         }else{
             return true;
         }
-    }
-
-    public Cursor getUserLocationData(String USERID){
-     Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE isMajor=1 AND USERID = '"+USERID+"' ORDER BY USERID, LID",null);
-     return res;
     }
 
     public Cursor getUserLastLocationData(String USERID){
@@ -150,7 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getUserLocationDataByDate(String USERID){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
         String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY USERID, LID",null);
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY TIMESTAMP",null);
         return res;
     }
 

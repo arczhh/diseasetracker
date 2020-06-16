@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.config.Config;
 import com.confused.disease_tracker.datatype.LocationChecker;
 import com.confused.disease_tracker.datatype.MyLocation;
 import com.confused.disease_tracker.datatype.Patient;
@@ -59,11 +60,6 @@ public class DetectorService extends Service {
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private User myUser;
     private ArrayList<Patient> patients;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private int min = 60;
-    private int period = 1000*60*1;
-    private double dist1 = 0.15;
-    private double dist2 = 0.075;
 
     @Nullable
     @Override
@@ -78,7 +74,7 @@ public class DetectorService extends Service {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
             else
-                startForeground(1, new Notification());
+                startForeground(0, new Notification());
 
             Timer timer = new Timer ();
             TimerTask hourlyTask = new TimerTask () {
@@ -87,12 +83,12 @@ public class DetectorService extends Service {
                     // your code here...
                     myUser = user();
                     patients = patient();
-                    computeToInsert(dist1, dist2, min);
+                    computeToInsert(Config.getCond1_distance(), Config.getCond2_distance(), Config.getRange_min());
                 }
             };
 
             // schedule the task to run starting now and then every hour...
-            timer.schedule (hourlyTask, 0l, period);   // 1000*10*60 every 10 minut
+            timer.schedule (hourlyTask, 0l, Config.getDetectorService_period_timework());
 
         }else{
             stopService(new Intent(this, DetectorService.class));
@@ -123,7 +119,7 @@ public class DetectorService extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setSmallIcon(R.drawable.ic_map_black_24dp)
                 .build();
-        startForeground(1, notification);
+        startForeground(0, notification);
     }
 
     public static long[] unixTimestamp() throws ParseException {

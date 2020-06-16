@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
+import com.confused.disease_tracker.config.Config;
 import com.confused.disease_tracker.datatype.MyLocation;
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
@@ -50,7 +51,6 @@ import java.util.Date;
 
 public class SplashScreen extends AppCompatActivity {
 
-    private static int SPLASH_TIME_OUT = 4000;
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -87,7 +87,7 @@ public class SplashScreen extends AppCompatActivity {
                 }
 
             }
-        }, SPLASH_TIME_OUT);
+        }, Config.getSplashTimeOut());
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {

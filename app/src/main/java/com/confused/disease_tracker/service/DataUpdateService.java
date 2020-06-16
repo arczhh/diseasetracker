@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.config.Config;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,7 +35,6 @@ import java.util.TimerTask;
 public class DataUpdateService  extends Service {
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private int period = 1000*60*1;
 
     @Nullable
     @Override
@@ -47,7 +47,7 @@ public class DataUpdateService  extends Service {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
             else
-                startForeground(1, new Notification());
+                startForeground(0, new Notification());
 
             Timer timer = new Timer ();
             TimerTask hourlyTask = new TimerTask () {
@@ -59,7 +59,7 @@ public class DataUpdateService  extends Service {
             };
 
             // schedule the task to run starting now and then every hour...
-            timer.schedule (hourlyTask, 0l, period);   // 1000*10*60 every 10 minute
+            timer.schedule (hourlyTask, 0l, Config.getDataUpdateService_period_timework());   // 1000*10*60 every 10 minute
     }
 
     @Override
@@ -85,7 +85,7 @@ public class DataUpdateService  extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setSmallIcon(R.drawable.ic_map_black_24dp)
                 .build();
-        startForeground(1, notification);
+        startForeground(0, notification);
     }
 
     public void downloadPatient(){
