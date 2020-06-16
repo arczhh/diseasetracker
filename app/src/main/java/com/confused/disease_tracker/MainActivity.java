@@ -18,9 +18,11 @@ import com.jakewharton.threetenabp.AndroidThreeTen;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
@@ -29,7 +31,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    Switch mSwitch;
+    Button mSwitch;
+    Context context;
+    Intent intent1;
     LocationManager locationManager;
     boolean GpsStatus;
 
@@ -43,21 +47,18 @@ public class MainActivity extends AppCompatActivity {
         AndroidThreeTen.init(this);
         startService();
 
-
-        //Function Testing Section------------------------------------------------------------
-        mSwitch = (Switch) findViewById(R.id.switch1);
-        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        //Function Testing Section------------------------------------------------------------------
+        mSwitch = (Button)findViewById(R.id.switch1);
+        context = getApplicationContext();
+        CheckGpsStatus();
+        mSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(mSwitch.isChecked()){
-                    Toast.makeText(getBaseContext(), "ON", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(getBaseContext(), "OFF", Toast.LENGTH_SHORT).show();
-                }
+            public void onClick(View view) {
+                intent1 = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent1);
             }
         });
-        //--------------------------------------------------------------------------------------
-
+        //------------------------------------------------------------------------------------------
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
@@ -69,6 +70,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+        //Test Status GPS --------------------------------------------------------------------------
+        private void CheckGpsStatus() {
+            locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+            assert locationManager != null;
+            GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if(GpsStatus == true) {
+                Toast.makeText(this, "GPS is Enabled",Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "GPS is Disabled",Toast.LENGTH_SHORT).show();
+            }
+        }
+        //------------------------------------------------------------------------------------------
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
