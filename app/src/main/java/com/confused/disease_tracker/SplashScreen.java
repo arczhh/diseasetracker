@@ -51,7 +51,6 @@ public class SplashScreen extends AppCompatActivity {
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,7 +95,7 @@ public class SplashScreen extends AppCompatActivity {
                 return true;
             }
         }
-        Log.i ("Service status", "Not running");
+        Log.i ("Service status", "Not running "+serviceClass.getName());
         return false;
     }
 

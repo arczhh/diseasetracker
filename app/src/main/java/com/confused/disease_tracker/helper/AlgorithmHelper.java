@@ -8,6 +8,7 @@ import org.threeten.bp.LocalDateTime;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.util.Date;
 
 public class AlgorithmHelper {
     public static double calDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -45,13 +46,9 @@ public class AlgorithmHelper {
         return timeRange;
     }
 
-    // In order to check conditions
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static LocalDateTime realTime(int hr, int min, LocalDateTime date) {
         DecimalFormat formatter = new DecimalFormat("00");
-        String dateStr = String.valueOf(date).substring(0, 10);
-        LocalDate dateLocalDate = java.time.LocalDate.parse(dateStr);
-        String dateFormat;
+        LocalDateTime d = date;
         if(min >= 60) {
             hr = hr+min/60;
             min = min-(min/60)*60;
@@ -61,12 +58,12 @@ public class AlgorithmHelper {
         }
         if(hr >= 24) {
             hr = hr - 24;
-            dateLocalDate = dateLocalDate.plusDays(1);
+            d = date.plusDays(1);
         }else if(hr < 0) {
             hr = 24-(hr * -1);
-            dateLocalDate = dateLocalDate.minusDays(1);
+            d = date.minusDays(1);
         }
-        return LocalDateTime.parse(dateLocalDate+"T"+formatter.format(hr)+":"+formatter.format(min));
+        return LocalDateTime.parse(String.valueOf(d).substring(0,10)+"T"+formatter.format(hr)+":"+formatter.format(min));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
