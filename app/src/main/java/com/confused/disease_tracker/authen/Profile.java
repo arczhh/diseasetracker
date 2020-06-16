@@ -24,6 +24,8 @@ import android.widget.Toast;
 import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
+import com.confused.disease_tracker.service.DataUpdateService;
+import com.confused.disease_tracker.service.DetectorService;
 import com.confused.disease_tracker.service.LocationService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -190,11 +192,17 @@ public class Profile extends AppCompatActivity {
     }
 
     public void logout(View view) {
-        LocationService mYourService = new LocationService();
-        Intent mServiceIntent = new Intent(this, mYourService.getClass());
+        LocationService mYourService1 = new LocationService();
+        DetectorService mYourService2 = new DetectorService();
+        DataUpdateService mYourService3 = new DataUpdateService();
+        Intent mServiceIntent1 = new Intent(this, mYourService1.getClass());
+        Intent mServiceIntent2 = new Intent(this, mYourService2.getClass());
+        Intent mServiceIntent3 = new Intent(this, mYourService3.getClass());
         FirebaseAuth.getInstance().signOut();//logout
         startActivity(new Intent(getApplicationContext(),Login.class));
-        stopService(mServiceIntent);
+        stopService(mServiceIntent1);
+        stopService(mServiceIntent2);
+        stopService(mServiceIntent3);
         finish();
     }
 }

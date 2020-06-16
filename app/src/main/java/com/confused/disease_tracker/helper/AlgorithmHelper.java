@@ -36,7 +36,6 @@ public class AlgorithmHelper {
     }
 
     // Main of function
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static LocalDateTime[] time(int range, LocalDateTime date) {
         int[] time = {range/60, (range-(range/60)*60)};
         // Compute to getting range r1 to r2;
@@ -66,7 +65,6 @@ public class AlgorithmHelper {
         return LocalDateTime.parse(String.valueOf(d).substring(0,10)+"T"+formatter.format(hr)+":"+formatter.format(min));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static boolean isInRange(LocalDateTime user, LocalDateTime patient, int min) {
         LocalDateTime t1date = time(min, patient)[0];
         LocalDateTime t2date = time(min, patient)[1];
@@ -74,7 +72,13 @@ public class AlgorithmHelper {
         return user.isAfter(t1date) && user.isBefore(t2date);
     }
 
-
+    public static int[] getRandomIntegerBetweenRange(double min, double max){
+        double x = (int)(Math.random()*((max-min)+1))+min;
+        double y = (int)(Math.random()*((max-min)+1))+min;
+        double z = (int)(Math.random()*((max-min)+1))+min;
+        int[] series = {(int) x,(int) y,(int) z};
+        return series;
+    }
 
 
 }

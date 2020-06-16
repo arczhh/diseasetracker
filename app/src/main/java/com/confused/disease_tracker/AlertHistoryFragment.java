@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -73,23 +74,26 @@ public class AlertHistoryFragment extends Fragment {
         while (row.moveToNext()) {
             risk.add(row.getInt(9));
             aid.add(row.getInt(0));
-            strings.add(row.getString(1)+", "+row.getString(2)+", "+row.getString(3)+", "+row.getString(4)+", "+row.getString(5)+", "+row.getString(6)+", "+row.getString(7)+", "+row.getString(8)+", "+row.getString(9)+", "+row.getString(10));
+            //String str = row.getString(1)+", "+row.getString(2)+", "+row.getString(3)+", "+row.getString(4)+", "+row.getString(5)+", "+row.getString(6)+", "+row.getString(7)+", "+row.getString(8)+", "+row.getString(9)+", "+row.getString(10);
+            String str = row.getString(8);
+            strings.add(str);
         }
         ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, strings){
+            @SuppressLint("ResourceType")
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
                 View view = super.getView(position, convertView, parent);
                 if(risk.get(position) == 0){
-                    view.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_light));
+                    view.setBackgroundColor(Color.argb(150,255,165,82));
                 }else{
-                    view.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+                    view.setBackgroundColor(Color.argb(200,255,56,56));
                 }
                 return view;
             }
         };
         listView.setAdapter(arrayAdapter);
-        listView.setDivider(null);
+        //listView.setDivider(null);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.config.Config;
 import com.confused.disease_tracker.datatype.LocationChecker;
 import com.confused.disease_tracker.datatype.MyLocation;
 import com.confused.disease_tracker.datatype.Patient;
@@ -59,11 +60,6 @@ public class DetectorService extends Service {
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private User myUser;
     private ArrayList<Patient> patients;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private int min = 60;
-    private int period = 1000*60*1;
-    private double dist1 = 0.15;
-    private double dist2 = 0.075;
 
     @Nullable
     @Override
@@ -71,14 +67,14 @@ public class DetectorService extends Service {
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onCreate() {
         sqLiteDatabase = new DatabaseHelper(getApplication());
+        createFakeUserLocation();
         if(!user.isAnonymous()){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
             else
-                startForeground(1, new Notification());
+                startForeground(0, new Notification());
 
             Timer timer = new Timer ();
             TimerTask hourlyTask = new TimerTask () {
@@ -87,12 +83,12 @@ public class DetectorService extends Service {
                     // your code here...
                     myUser = user();
                     patients = patient();
-                    computeToInsert(dist1, dist2, min);
+                    computeToInsert(Config.getCond1_distance(), Config.getCond2_distance(), Config.getRange_min());
                 }
             };
 
             // schedule the task to run starting now and then every hour...
-            timer.schedule (hourlyTask, 0l, period);   // 1000*10*60 every 10 minut
+            timer.schedule (hourlyTask, 0l, Config.getDetectorService_period_timework());
 
         }else{
             stopService(new Intent(this, DetectorService.class));
@@ -107,8 +103,8 @@ public class DetectorService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground(){
-        String NOTIFICATION_CHANNEL_ID = "com.confused.disease_tracker";
-        String channelName = "Detector";
+        String NOTIFICATION_CHANNEL_ID = "com.confused.disease_tracker.service.DetectorService";
+        String channelName = "DetectorService";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -123,7 +119,7 @@ public class DetectorService extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setSmallIcon(R.drawable.ic_map_black_24dp)
                 .build();
-        startForeground(2, notification);
+        startForeground(0, notification);
     }
 
     public static long[] unixTimestamp() throws ParseException {
@@ -137,7 +133,6 @@ public class DetectorService extends Service {
         return timestamp;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void computeToInsert(double dist1, double dist2, int min){
         for(Patient pat : patients){
             pat = filterEachPatient(myUser, pat, dist1, dist2, min);
@@ -155,24 +150,16 @@ public class DetectorService extends Service {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static Patient filterEachPatient(User user, Patient patient, double dist1, double dist2, int min){
         patient.filterByDate(user, min);
         patient.filterByDistance(user, dist1, dist2, min);
         return patient;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public User user(){
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         Cursor res = sqLiteDatabase.getUserLocationDataByDate(firebaseUser.getUid());
         User usr = new User(firebaseUser.getUid());
-        usr.addLocations(new LatLng(16.47061,102.827754), "2020-06-10T06:00");
-        usr.addLocations(new LatLng(16.464226,102.82829), "2020-06-10T09:17");
-        usr.addLocations(new LatLng(16.425247,102.80424), "2020-06-10T13:06");
-        usr.addLocations(new LatLng(16.474898,102.822701), "2020-06-10T14:33");
-        usr.addLocations(new LatLng(16.443783,102.812688), "2020-06-10T18:30");
-        usr.addLocations(new LatLng(16.463539,102.829479), "2020-06-10T21:42");
         if (res.getCount() != 0) {
             while (res.moveToNext()) {
                 LatLng loc = new LatLng(res.getDouble(2), res.getDouble(3));
@@ -184,7 +171,6 @@ public class DetectorService extends Service {
         return usr;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("LongLogTag")
     public ArrayList<Patient> patient(){
         Patient patient;
@@ -204,6 +190,69 @@ public class DetectorService extends Service {
             Log.d("Database/Patient", pat.getString(1) + ", " + pat.getString(2) + ", " + pat.getString(3));
         }
         return patients;
+    }
+
+    private void createFakeUserLocation(){
+        ArrayList<MyLocation> myLocations = new ArrayList<>();
+
+        // Day1
+        myLocations.add(new MyLocation(new LatLng(16.4796388479, 102.803494934), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"08:25")));
+        myLocations.add(new MyLocation(new LatLng(16.4796105965, 102.803846139), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"08:40")));
+        myLocations.add(new MyLocation(new LatLng(16.4796743625, 102.804324257), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"08:50")));
+        myLocations.add(new MyLocation(new LatLng(16.4800693059, 102.80433541), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"08:55")));
+        myLocations.add(new MyLocation(new LatLng(16.4809494748, 102.804904595), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"09:05")));
+        myLocations.add(new MyLocation(new LatLng(16.4810542117, 102.804828286), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"09:10")));
+        myLocations.add(new MyLocation(new LatLng(16.4809001273, 102.80632218), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"14:25")));
+        myLocations.add(new MyLocation(new LatLng(16.4806038055, 102.808280452), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"15:00")));
+        myLocations.add(new MyLocation(new LatLng(16.4806912539, 102.80697263), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"15:05")));
+        myLocations.add(new MyLocation(new LatLng(16.4810507982, 102.804879574), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"15:10")));
+        myLocations.add(new MyLocation(new LatLng(16.4799849125, 102.804878909), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"18:00")));
+        myLocations.add(new MyLocation(new LatLng(16.4793779146, 102.805222232), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"18:05")));
+        myLocations.add(new MyLocation(new LatLng(16.4804133112, 102.80526707), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"18:30")));
+        myLocations.add(new MyLocation(new LatLng(16.4810442377, 102.804796885), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(2)).substring(0,10)+"T"+"18:35")));
+
+        // Day2
+        myLocations.add(new MyLocation(new LatLng(16.4810445134, 102.80478476), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:30")));
+        myLocations.add(new MyLocation(new LatLng(16.4804397884, 102.809134179), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:35")));
+        myLocations.add(new MyLocation(new LatLng(16.4799747447, 102.813959706), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:40")));
+        myLocations.add(new MyLocation(new LatLng(16.4797034358, 102.816635409), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:45")));
+        myLocations.add(new MyLocation(new LatLng(16.4775619524, 102.820123087), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:50")));
+        myLocations.add(new MyLocation(new LatLng(16.4778001778, 102.82232163), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"07:55")));
+        myLocations.add(new MyLocation(new LatLng(16.4777523241, 102.822913785), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"08:00")));
+        myLocations.add(new MyLocation(new LatLng(16.477297409, 102.823126527), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"08:30")));
+        myLocations.add(new MyLocation(new LatLng(16.4765997486, 102.823284566), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"08:35")));
+        myLocations.add(new MyLocation(new LatLng(16.4765740279, 102.823123633), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"08:45")));
+        myLocations.add(new MyLocation(new LatLng(16.476540591, 102.82328993), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"11:45")));
+        myLocations.add(new MyLocation(new LatLng(16.4765611675, 102.82305926), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"11:55")));
+        myLocations.add(new MyLocation(new LatLng(16.4766074647, 102.823233032), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"16:05")));
+        myLocations.add(new MyLocation(new LatLng(16.4773944522, 102.823238349), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"16:10")));
+        myLocations.add(new MyLocation(new LatLng(16.4776928104, 102.822358584), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"16:15")));
+        myLocations.add(new MyLocation(new LatLng(16.478497644, 102.819015879), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"16:25")));
+        myLocations.add(new MyLocation(new LatLng(16.4779807639, 102.819651238), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"16:30")));
+        myLocations.add(new MyLocation(new LatLng(16.4791748578, 102.818118407), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"17:25")));
+        myLocations.add(new MyLocation(new LatLng(16.4798127206, 102.814921214), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"17:30")));
+        myLocations.add(new MyLocation(new LatLng(16.4800819907, 102.812354565), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"17:35")));
+        myLocations.add(new MyLocation(new LatLng(16.4804833389, 102.809178583), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"17:45")));
+        myLocations.add(new MyLocation(new LatLng(16.4806287574, 102.807363738), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"17:55")));
+        myLocations.add(new MyLocation(new LatLng(16.4810052128, 102.804824654), LocalDateTime.parse(String.valueOf(LocalDateTime.now().minusDays(1)).substring(0,10)+"T"+"18:00")));
+
+        // Date fixed
+        myLocations.add(new MyLocation( new LatLng(16.47061,102.827754), LocalDateTime.parse("2020-06-10T06:00")));
+        myLocations.add(new MyLocation(new LatLng(16.464226,102.82829), LocalDateTime.parse("2020-06-10T09:17")));
+        myLocations.add(new MyLocation(new LatLng(16.425247,102.80424), LocalDateTime.parse("2020-06-10T13:06")));
+        myLocations.add(new MyLocation(new LatLng(16.474898,102.822701), LocalDateTime.parse("2020-06-10T14:33")));
+        myLocations.add(new MyLocation(new LatLng(16.443783,102.812688), LocalDateTime.parse("2020-06-10T18:30")));
+        myLocations.add(new MyLocation(new LatLng(16.463539,102.829479), LocalDateTime.parse("2020-06-10T21:42")));
+
+        for(MyLocation e : myLocations){
+            Cursor row = sqLiteDatabase.checkLocationInUserLocation(user.getUid(), e.getLatLng().latitude, e.getLatLng().longitude);
+            if (row.getCount() != 0) {
+                sqLiteDatabase.deleteFakeUserLocation(e.getLatLng().latitude, e.getLatLng().longitude);
+            }else{
+                sqLiteDatabase.insertUserLocationWithTime(user.getUid(), e.getLatLng().latitude, e.getLatLng().longitude, String.valueOf(e.getTimestamp()));
+            }
+        }
+
     }
 
 }

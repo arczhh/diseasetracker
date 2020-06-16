@@ -64,5 +64,6 @@ public class Setting {
         return Double.parseDouble(split[0]+"."+dec);
     }
 
+
 }
 
