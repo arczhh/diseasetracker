@@ -108,6 +108,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public boolean insertUserLocationWithTime(String userid, double lat, double lng, String timestamp){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("USERID", userid);
+        contentValues.put("LAT", lat);
+        contentValues.put("LNG", lng);
+        contentValues.put("TIMESTAMP", timestamp);
+        contentValues.put("isMajor", 1);
+        long result = sqLiteDatabase.insert(TAB1, null, contentValues);
+        if(result == -1){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     public Cursor getUserLocationData(String USERID){
      Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE isMajor=1 AND USERID = '"+USERID+"' ORDER BY USERID, LID",null);
      return res;
@@ -123,12 +138,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public Cursor getUserLocationTrack(String USERID){
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"'",null);
+    public Cursor checkLocationInUserLocation(String USERID, double lat, double lng){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND LAT = "+lat+" AND LNG = "+lng,null);
         return res;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void deleteFakeUserLocation(double lat, double lng){
+        sqLiteDatabase.execSQL("DELETE FROM "+TAB1+" WHERE LAT = "+lat+" AND LNG = "+lng);
+    }
+
     public Cursor getUserLocationDataByDate(String USERID){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
         String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];

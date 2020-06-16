@@ -69,8 +69,8 @@ public class DataUpdateService  extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground(){
-        String NOTIFICATION_CHANNEL_ID = "com.confused.disease_tracker";
-        String channelName = "Detector";
+        String NOTIFICATION_CHANNEL_ID = "com.confused.disease_tracker.service.DataUpdateService";
+        String channelName = "DataUpdateService";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -85,7 +85,7 @@ public class DataUpdateService  extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setSmallIcon(R.drawable.ic_map_black_24dp)
                 .build();
-        startForeground(2, notification);
+        startForeground(1, notification);
     }
 
     public void downloadPatient(){

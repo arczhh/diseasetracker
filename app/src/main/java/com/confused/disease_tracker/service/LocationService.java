@@ -55,8 +55,8 @@ public class LocationService extends Service {
     private LocationListener listener;
     private LocationManager locationManager;
     private DatabaseHelper sqLiteDatabase;
-    private long refreshTime = 60*1000*5;
-    private int minDistance = 150;
+    private long refreshTime = 60*1000*1;
+    private int minDistance = 10;
     private int[] majorDec = {3, 4};
     private int[] minorDec = {3, 3};
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -131,10 +131,9 @@ public class LocationService extends Service {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMyOwnForeground(){
-        String NOTIFICATION_CHANNEL_ID = "com.example.simpleapp";
-        String channelName = "My Background Service";
+        String NOTIFICATION_CHANNEL_ID = "com.confused.disease_tracker.service.LocationService";
+        String channelName = "LocationService";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
@@ -150,7 +149,7 @@ public class LocationService extends Service {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setContentText(user.getEmail())
                 .build();
-        startForeground(2, notification);
+        startForeground(1, notification);
     }
 
     private void insertLocation(double lat, double lng){

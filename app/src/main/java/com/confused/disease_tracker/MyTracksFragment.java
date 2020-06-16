@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
+import com.confused.disease_tracker.helper.AlgorithmHelper;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,6 +31,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.threeten.bp.LocalDateTime;
 
 import java.util.ArrayList;
 
@@ -70,39 +73,36 @@ public class MyTracksFragment extends Fragment implements OnMapReadyCallback {
     public void userLocationMarker(){
         PolylineOptions userLocationLine = new PolylineOptions();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        double[] animateMove = {0,0};
-        Cursor res = sqLiteDatabase.getUserLocationData(user.getUid());
-        Cursor track = sqLiteDatabase.getUserLocationTrack(user.getUid());
-        if(res.getCount() == 0){
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868, 100.493645),5));
-        }
-        while (res.moveToNext()){
-            /*mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(res.getDouble(2), res.getDouble(3)))
-                    .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_transparent))
-            );*/
+        String dateCheck = String.valueOf(LocalDateTime.now()).substring(0,10);
+        int[] color = AlgorithmHelper.getRandomIntegerBetweenRange(0, 255);
+
+        // Animate to Thailand
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868, 100.493645),5));
+
+        Cursor alertHistory = sqLiteDatabase.getAlertHistory(user.getUid());
+        while (alertHistory.moveToNext()){
+            Log.d("Circle",alertHistory.getDouble(5)+", "+alertHistory.getDouble(6) );
             mMap.addCircle(new CircleOptions()
-                    .center(new LatLng(res.getDouble(2), res.getDouble(3)))
+                    .center(new LatLng(alertHistory.getDouble(5), alertHistory.getDouble(6)))
                     .radius(50.0)
-                    .strokeColor(Color.GREEN)
+                    .strokeColor(Color.RED)
                     .strokeWidth(1f)
-                    .fillColor(Color.argb(70,50,150,50))
+                    .fillColor(Color.argb(70,150,50,50))
             );
         }
-        if(track.getCount() == 0){
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868, 100.493645),5));
-        }else{
-            while (track.moveToNext()) {
-                animateMove[0] = track.getDouble(2);
-                animateMove[1] = track.getDouble(3);
-                mMap.addPolyline(userLocationLine
-                        .add(new LatLng(track.getDouble(2), track.getDouble(3)))
-                        .width(3f)
-                        .color(Color.RED)
-                );
 
+        Cursor row = sqLiteDatabase.getUserLocationDataByDate(user.getUid());
+        while(row.moveToNext()){
+            if(row.getString(4).substring(0, 10) != dateCheck){
+                dateCheck = row.getString(4).substring(0, 10);
+                color = AlgorithmHelper.getRandomIntegerBetweenRange(0, 255);
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(animateMove[0], animateMove[1]), 15));
+            mMap.addPolyline(userLocationLine
+                    .add(new LatLng(row.getDouble(2), row.getDouble(3)))
+                    .width(5f)
+                    .color(Color.argb(150,color[0],color[1],color[2]))
+            );
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(row.getDouble(2), row.getDouble(3)),18));
         }
     }
 }

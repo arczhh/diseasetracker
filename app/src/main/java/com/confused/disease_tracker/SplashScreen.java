@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
+import com.confused.disease_tracker.datatype.MyLocation;
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
 import com.confused.disease_tracker.helper.DatabaseHelper;
@@ -37,11 +38,13 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 
 

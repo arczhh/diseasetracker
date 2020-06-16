@@ -90,7 +90,6 @@ public class Patient {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public Patient filterByDate(User user, int range){
         ArrayList<MyLocation> newLocation = new ArrayList<>();
         for(MyLocation usr : user.getLocations()) {
@@ -112,7 +111,6 @@ public class Patient {
         return this;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public Patient filterByDistance(User user, double dist1, double dist2, int min){
         ArrayList<MyLocation> newLocation = new ArrayList<>();
         for(MyLocation usr : user.getLocations()) {
