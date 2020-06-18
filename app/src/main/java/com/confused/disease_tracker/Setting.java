@@ -7,7 +7,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.view.View;
 
 import androidx.core.app.ActivityCompat;
@@ -52,9 +54,9 @@ public class Setting {
                 ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 8);
             }
             return false;
-        }else{
+            }else{
             return true;
-        }
+            }
     }
 
     public static double covertDecimal(double src, int n){
@@ -62,6 +64,22 @@ public class Setting {
         String[] split = srcToStr.split("\\.");
         String dec = split[1]+"000000000000".substring(0,n);
         return Double.parseDouble(split[0]+"."+dec);
+    }
+
+    //this section is for check if gps is enable or not
+    public static Boolean isLocationEnabled(Context context)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // This is new method provided in API 28
+            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            return lm.isLocationEnabled();
+        } else {
+            // This is Deprecated in API 28
+            int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
+                    Settings.Secure.LOCATION_MODE_OFF);
+            return  (mode != Settings.Secure.LOCATION_MODE_OFF);
+
+        }
     }
 
 }

@@ -31,14 +31,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button mSwitch;
-    Context context;
-    Intent intent1;
-    LocationManager locationManager;
-    boolean GpsStatus;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,18 +39,6 @@ public class MainActivity extends AppCompatActivity {
         AndroidThreeTen.init(this);
         startService();
 
-        //Function Testing Section------------------------------------------------------------------
-        mSwitch = (Button)findViewById(R.id.switch1);
-        context = getApplicationContext();
-        CheckGpsStatus();
-        mSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                intent1 = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent1);
-            }
-        });
-        //------------------------------------------------------------------------------------------
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
@@ -70,19 +50,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-        //Test Status GPS --------------------------------------------------------------------------
-        private void CheckGpsStatus() {
-            locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
-            assert locationManager != null;
-            GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            if(GpsStatus == true) {
-                Toast.makeText(this, "GPS is Enabled",Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "GPS is Disabled",Toast.LENGTH_SHORT).show();
-            }
-        }
-        //------------------------------------------------------------------------------------------
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {

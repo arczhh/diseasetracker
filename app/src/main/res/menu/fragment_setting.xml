@@ -23,9 +23,9 @@
 
     <Switch
         android:id="@+id/switch1"
-        android:layout_width="390dp"
+        android:layout_width="327dp"
         android:layout_height="58dp"
-        android:text="GPS"
+        android:text="อนุญาติให้บันทึกตำแหน่ง"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
