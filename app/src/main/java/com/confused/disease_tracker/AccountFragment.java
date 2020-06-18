@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -344,11 +345,8 @@ public class AccountFragment extends Fragment {
         }
         switch1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(switch2.isChecked()){
-                    Toast.makeText(getContext(),"Turn off location.", Toast.LENGTH_SHORT).show();
-                }else {
-                    Toast.makeText(getContext(),"Turn on location.", Toast.LENGTH_SHORT).show();
-                }
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
             }
         });
 
