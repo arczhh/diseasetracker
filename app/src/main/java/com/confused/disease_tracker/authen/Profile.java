@@ -1,32 +1,23 @@
 package com.confused.disease_tracker.authen;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
-import com.confused.disease_tracker.service.DataUpdateService;
-import com.confused.disease_tracker.service.DetectorService;
-import com.confused.disease_tracker.service.LocationService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,21 +29,20 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import javax.annotation.Nullable;
 
 public class Profile extends AppCompatActivity {
     private static final int GALLERY_INTENT_CODE = 1023 ;
-    private TextView fullName,email,phone,verifyMsgTxtView;
+    private TextView fullName,email,phone, status, logout, editProfile;
     private FirebaseAuth fAuth;
     private FirebaseFirestore fStore;
     private String userId;
     private Button resendCodeBtn;
-    private Button resetPassLocal,changeProfileImage;
+    private Button resetPassLocal;
     private FirebaseUser user;
-    private ImageView profileImage, backBtn;
+    private ImageView profileImage;
     private StorageReference storageReference;
 
     @SuppressLint("WrongViewCast")
@@ -62,25 +52,25 @@ public class Profile extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         Setting.setWindow(this);
 
-        backBtn = findViewById(R.id.backBtn);
+        /*backBtn = findViewById(R.id.backBtn);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
-        });
+        });*/
 
         phone = findViewById(R.id.profilePhone);
         fullName = findViewById(R.id.profileName);
         email = findViewById(R.id.profileEmail);
-        resetPassLocal = findViewById(R.id.resetPasswordLocal);
+        //resetPassLocal = findViewById(R.id.resetPasswordLocal);
+        status = findViewById(R.id.profileStatusText);
+        logout = findViewById(R.id.logoutBtn);
 
         profileImage = findViewById(R.id.profileImage);
-        changeProfileImage = findViewById(R.id.changeProfile);
 
         resendCodeBtn = (Button) findViewById(R.id.resendCode);
-        verifyMsgTxtView = (TextView) findViewById(R.id.verifyMsg);
 
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
@@ -90,9 +80,8 @@ public class Profile extends AppCompatActivity {
         user = fAuth.getCurrentUser();
 
        if(!user.isEmailVerified()) {
-           backBtn.setVisibility(View.GONE);
-           verifyMsgTxtView.setVisibility(View.VISIBLE);
            resendCodeBtn.setVisibility(View.VISIBLE);
+           findViewById(R.id.msg).setVisibility(View.VISIBLE);
 
            resendCodeBtn.setOnClickListener(new View.OnClickListener() {
                @Override
@@ -112,6 +101,15 @@ public class Profile extends AppCompatActivity {
            });
        }
 
+        logout.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                finish();
+                FirebaseAuth.getInstance().signOut();//logout
+                startActivity(new Intent(getApplicationContext(), Login.class));
+
+            }
+        });
+
         StorageReference profileRef = storageReference.child("user/" + userId + "/profile.jpg");
         profileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -128,7 +126,6 @@ public class Profile extends AppCompatActivity {
                     phone.setText(documentSnapshot.getString("phoneNum"));
                     fullName.setText(documentSnapshot.getString("name"));
                     email.setText(documentSnapshot.getString("email"));
-
                 }else {
                     Log.d("tag", "onEvent: Document do not exists");
                 }
@@ -136,7 +133,7 @@ public class Profile extends AppCompatActivity {
         });
 
 
-        resetPassLocal.setOnClickListener(new View.OnClickListener() {
+        /*resetPassLocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -178,7 +175,7 @@ public class Profile extends AppCompatActivity {
             }
         });
 
-        changeProfileImage.setOnClickListener(new View.OnClickListener() {
+        /*changeProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // open gallery
@@ -188,21 +185,51 @@ public class Profile extends AppCompatActivity {
                 i.putExtra("phoneNum",phone.getText().toString());
                 startActivity(i);
             }
+        });*/
+
+        if(user.isEmailVerified()){
+            status.setText("ยืนยันอีเมลแล้ว");
+            status.setTextColor(Color.argb(200,127, 177, 116));
+        }else {
+            status.setText("ยังไม่ได้ทำการยืนยันอีเมล");
+            status.setTextColor(Color.argb(200, 232, 30, 37));
+            findViewById(R.id.uploadLocationSection1).setVisibility(View.GONE);
+            findViewById(R.id.uploadLocationSection2).setVisibility(View.GONE);
+            findViewById(R.id.deviceAccessSection1).setVisibility(View.GONE);
+            findViewById(R.id.deviceAccessSection2).setVisibility(View.GONE);
+        }
+        editProfileBtn();
+    }
+
+    public void editProfileBtn(){
+        editProfile = findViewById(R.id.editProfileBtn);
+
+        editProfile.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(v.getContext(),EditProfile.class);
+                i.putExtra("name",fullName.getText().toString());
+                i.putExtra("email",email.getText().toString());
+                i.putExtra("phoneNum",phone.getText().toString());
+                i.putExtra("status",status.getText().toString());
+                startActivityForResult(i, 1);
+            }
         });
     }
 
-    public void logout(View view) {
-        LocationService mYourService1 = new LocationService();
-        DetectorService mYourService2 = new DetectorService();
-        DataUpdateService mYourService3 = new DataUpdateService();
-        Intent mServiceIntent1 = new Intent(this, mYourService1.getClass());
-        Intent mServiceIntent2 = new Intent(this, mYourService2.getClass());
-        Intent mServiceIntent3 = new Intent(this, mYourService3.getClass());
-        FirebaseAuth.getInstance().signOut();//logout
-        startActivity(new Intent(getApplicationContext(),Login.class));
-        stopService(mServiceIntent1);
-        stopService(mServiceIntent2);
-        stopService(mServiceIntent3);
-        finish();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                boolean hasBackPressed = data.getBooleanExtra("hasBackPressed", false);
+                if(hasBackPressed){
+                    finish();
+                    startActivity(getIntent());
+                }
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
     }
 }

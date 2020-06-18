@@ -1,15 +1,17 @@
 package com.confused.disease_tracker.config;
 
 public class Config {
+    // Disease
+    private static String disease = "โควิด-19";
+    private static String defaultStausUpload = "ยังไม่ได้รับการตรวจสอบ";
 
     // Config LocationService
-    private static double collectPoint_distance = 0.05;
-    private static long collectPoint_refreshTime = 60*1000*1;
-    private static int collectPoint_minDistance = 10;
+    private static long collectPoint_refreshTime = 5; // minute
+    private static int collectPoint_minDistance = 15;
 
     // Config DetectorService
-    private static double cond1_distance = 0.15;
-    private static double cond2_distance = 0.075;
+    private static double cond1_distance = 0.015;
+    private static double cond2_distance = 0.005;
     private static int range_min = 60; // minute
     private static int DetectorService_period_timework = 1; // minute
 
@@ -19,12 +21,16 @@ public class Config {
     // Splash Screen
     private static int SPLASH_TIME_OUT = 4000; // ms
 
-    public static double getCollectPoint_distance() {
-        return collectPoint_distance;
+    public static String getDisease() {
+        return disease;
+    }
+
+    public static String getDefaultStausUpload() {
+        return defaultStausUpload;
     }
 
     public static long getCollectPoint_refreshTime() {
-        return collectPoint_refreshTime;
+        return collectPoint_refreshTime*60*1000;
     }
 
     public static int getCollectPoint_minDistance() {
@@ -54,4 +60,5 @@ public class Config {
     public static int getSplashTimeOut() {
         return SPLASH_TIME_OUT;
     }
+
 }

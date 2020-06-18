@@ -1,6 +1,7 @@
 package com.confused.disease_tracker;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Notification;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,7 +21,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
+import com.confused.disease_tracker.authen.EditProfile;
 import com.confused.disease_tracker.datatype.LocationChecker;
 import com.confused.disease_tracker.datatype.MyLocation;
 import com.confused.disease_tracker.datatype.Patient;
@@ -43,12 +46,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AlertHistoryFragment extends Fragment {
+    boolean hasBackPressed = false;
     private DatabaseHelper sqLiteDatabase;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ListView listView;
     private ArrayList<String> strings = new ArrayList<>();
     private ArrayList<Integer> risk = new ArrayList<>();
     private ArrayList<Integer> aid = new ArrayList<>();
+    private ArrayList<Integer> isRead = new ArrayList<>();
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -60,12 +65,12 @@ public class AlertHistoryFragment extends Fragment {
         View inf = inflater.inflate(R.menu.history_list, container, false);
         listView = (ListView) inf.findViewById(R.id.listView);
         alertHistoryListView();
-        //patientloc();
+
         return inf;
     }
 
     public void alertHistoryListView(){
-        Cursor row = sqLiteDatabase.getAlertHistory(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        Cursor row = sqLiteDatabase.getAlertHistory7Days(FirebaseAuth.getInstance().getCurrentUser().getUid());
         if(row.getCount() < 0){
             Log.d("Database/Alert Hist","No data found.");
         }else{
@@ -74,6 +79,7 @@ public class AlertHistoryFragment extends Fragment {
         while (row.moveToNext()) {
             risk.add(row.getInt(9));
             aid.add(row.getInt(0));
+            isRead.add(row.getInt(10));
             //String str = row.getString(1)+", "+row.getString(2)+", "+row.getString(3)+", "+row.getString(4)+", "+row.getString(5)+", "+row.getString(6)+", "+row.getString(7)+", "+row.getString(8)+", "+row.getString(9)+", "+row.getString(10);
             String str = row.getString(8);
             strings.add(str);
@@ -85,9 +91,18 @@ public class AlertHistoryFragment extends Fragment {
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
                 View view = super.getView(position, convertView, parent);
                 if(risk.get(position) == 0){
-                    view.setBackgroundColor(Color.argb(150,255,165,82));
+                    if(isRead.get(position) == 0){
+                        view.setBackgroundColor(Color.argb(200,255,165,82));
+                    }
+                    if(isRead.get(position) == 1){
+                        view.setBackgroundColor(Color.argb(150,255,165,82));
+                    }
                 }else{
-                    view.setBackgroundColor(Color.argb(200,255,56,56));
+                    if(isRead.get(position) == 0){
+                        view.setBackgroundColor(Color.argb(200,255,56,56));
+                    }else{
+                        view.setBackgroundColor(Color.argb(150,255,56,56));
+                    }
                 }
                 return view;
             }
@@ -99,29 +114,29 @@ public class AlertHistoryFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getContext(), AlertHistoryMapActivity.class);
                 intent.putExtra("aid", aid.get(position));
-                startActivity(intent);
+                startActivityForResult(intent, 1);
             }
         });
     }
 
-    public void patientloc(){
-        Cursor pat = sqLiteDatabase.getPatientData();
-        if(pat.getCount() < 0){
-            Log.d("Database/pat","No data found.");
-        }
-        while (pat.moveToNext()) {
-            strings.add(pat.getString(0)+", "+pat.getString(1)+", "+pat.getString(2)+", "+pat.getString(3));
-            Cursor loc = sqLiteDatabase.getPatientLocationData(pat.getString(0));
-            if(loc.getCount() < 0){
-                Log.d("Database/patloc","No data found.");
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                hasBackPressed = data.getBooleanExtra("hasBackPressed", false);
+                if(hasBackPressed){
+                    strings = new ArrayList<>();
+                    risk = new ArrayList<>();
+                    aid = new ArrayList<>();
+                    isRead = new ArrayList<>();
+                    alertHistoryListView();
+                }
             }
-            while (loc.moveToNext()) {
-                strings.add(loc.getString(0)+", "+loc.getString(1)+", "+loc.getString(2)+", "+loc.getString(3));
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
             }
         }
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, strings);
-        listView.setAdapter(arrayAdapter);
-        listView.setDivider(null);
     }
 
 }

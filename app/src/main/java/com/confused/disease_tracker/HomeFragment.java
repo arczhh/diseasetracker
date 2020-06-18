@@ -2,6 +2,9 @@ package com.confused.disease_tracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
@@ -30,6 +33,7 @@ import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.DialogPopup;
 import com.confused.disease_tracker.helper.FontManager;
+import com.confused.disease_tracker.service.DetectorService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -233,5 +237,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                     .snippet(res.getString(4))
                     .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
         }
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running "+serviceClass.getName());
+        return false;
     }
 }

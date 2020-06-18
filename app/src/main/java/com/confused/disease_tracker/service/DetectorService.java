@@ -68,8 +68,8 @@ public class DetectorService extends Service {
     }
 
     public void onCreate() {
-        sqLiteDatabase = new DatabaseHelper(getApplication());
-        createFakeUserLocation();
+        sqLiteDatabase = new DatabaseHelper(getApplicationContext());
+        //createFakeUserLocation();
         if(!user.isAnonymous()){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
@@ -82,7 +82,9 @@ public class DetectorService extends Service {
                 public void run () {
                     // your code here...
                     myUser = user();
+                    Log.d("User","location size: "+myUser.getLocations().size());
                     patients = patient();
+                    Log.d("Patient","location size: "+patients.size());
                     computeToInsert(Config.getCond1_distance(), Config.getCond2_distance(), Config.getRange_min());
                 }
             };
@@ -113,13 +115,14 @@ public class DetectorService extends Service {
         manager.createNotificationChannel(chan);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setContentTitle("App detector service")
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .setSmallIcon(R.drawable.ic_map_black_24dp)
+        @SuppressLint("WrongConstant") Notification notification = notificationBuilder.setOngoing(true)
+                //.setContentTitle("App detector service")
+                //.setPriority(NotificationManager.IMPORTANCE_MIN)
+                //.setCategory(Notification.CATEGORY_SERVICE)
+                //.setSmallIcon(R.drawable.ic_map_black_24dp)
+                .setVisibility(Notification.VISIBILITY_SECRET)
                 .build();
-        startForeground(0, notification);
+        startForeground(1, notification);
     }
 
     public static long[] unixTimestamp() throws ParseException {
@@ -175,19 +178,23 @@ public class DetectorService extends Service {
     public ArrayList<Patient> patient(){
         Patient patient;
         ArrayList<Patient> patients = new ArrayList<>();;
-        Cursor pat = sqLiteDatabase.getPatientData();
-        if(pat.getCount() < 0){
-            Log.d("Database/Patient","No data found.");
-        }
-        while (pat.moveToNext()) {
-            patient = new Patient(pat.getString(0),pat.getString(1),pat.getString(2),pat.getString(3));
-            Cursor patLoc = sqLiteDatabase.getPatientLocationData(pat.getString(0));
-            while (patLoc.moveToNext()){
-                Log.d("Database/Patient location", patLoc.getString(0) + ", " + patLoc.getString(1) + ", " + patLoc.getString(2)+ ", " + patLoc.getString(3)+ ", " + patLoc.getString(4));
-                patient.addLocations(patLoc.getDouble(2), patLoc.getDouble(3), patLoc.getString(4));
+        Cursor user = sqLiteDatabase.getUserData(myUser.getUserid());
+        while(user.moveToNext()){
+            Cursor pat = sqLiteDatabase.getPatientData(user.getString(2));
+            Log.d("Database/Patient","Patient location size: "+pat.getCount());
+            if(pat.getCount() == 0){
+                Log.d("Database/Patient","No data found.");
             }
-            patients.add(patient);
-            Log.d("Database/Patient", pat.getString(1) + ", " + pat.getString(2) + ", " + pat.getString(3));
+            while (pat.moveToNext()) {
+                patient = new Patient(pat.getString(0),pat.getString(1),pat.getString(2),pat.getString(3));
+                Cursor patLoc = sqLiteDatabase.getPatientLocationData(pat.getString(0));
+                while (patLoc.moveToNext()){
+                    Log.d("Database/Patient location", patLoc.getString(0) + ", " + patLoc.getString(1) + ", " + patLoc.getString(2)+ ", " + patLoc.getString(3)+ ", " + patLoc.getString(4));
+                    patient.addLocations(patLoc.getDouble(2), patLoc.getDouble(3), patLoc.getString(4));
+                }
+                patients.add(patient);
+                Log.d("Database/Patient", pat.getString(1) + ", " + pat.getString(2) + ", " + pat.getString(3));
+            }
         }
         return patients;
     }

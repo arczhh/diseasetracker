@@ -58,14 +58,14 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AndroidThreeTen.init(this);
+        setContentView(R.layout.activity_splash_screen);
+        Setting.setWindow(this);
+        sqLiteDatabase = new DatabaseHelper(this);
         DataUpdateService mDataUpdateService = new DataUpdateService();
         Intent mServiceIntent1 = new Intent(this, mDataUpdateService.getClass());
         if (!isMyServiceRunning(mDataUpdateService.getClass())) {
             startService(mServiceIntent1);
         }
-        setContentView(R.layout.activity_splash_screen);
-        Setting.setWindow(this);
-        sqLiteDatabase = new DatabaseHelper(this);
         hospitalLocation();
         final FirebaseAuth fAuth = FirebaseAuth.getInstance();
         final FirebaseUser user = fAuth.getCurrentUser();
