@@ -1,6 +1,8 @@
 package com.confused.disease_tracker;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,10 +23,13 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.confused.disease_tracker.service.LocationService;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -49,11 +54,12 @@ public class SettingFlagment extends Fragment {
         mSwitch = (Switch) inf.findViewById(R.id.switch1);
         context = getContext();
         CheckGpsStatus();
+        LocationService mLocationService = new LocationService();
 
         if (CheckGpsStatus() == true){
             mSwitch.setChecked(true);
             //Toast.makeText(this.context, "เปิดระบบนำนาง",Toast.LENGTH_SHORT).show();
-        }else {
+        }else{
             mSwitch.setChecked(false);
             //Toast.makeText(this.context, "ปิดระบบนำทาง",Toast.LENGTH_SHORT).show();
         }
@@ -86,6 +92,20 @@ public class SettingFlagment extends Fragment {
         }
     }
 
+    /*public static Boolean isLocationEnabled(Activity activity)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // This is new method provided in API 28
+            LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+            return lm != null && lm.isLocationEnabled();
+        } else {
+            // This is Deprecated in API 28
+            int mode = Settings.Secure.getInt(activity.getContentResolver(), Settings.Secure.LOCATION_MODE,
+                    Settings.Secure.LOCATION_MODE_OFF);
+            return  (mode != Settings.Secure.LOCATION_MODE_OFF);
+
+        }
+    }*/
     //----------------------------------------------------------------------------------------------
 
     private View.OnClickListener mMyProfileBtn = new View.OnClickListener() {

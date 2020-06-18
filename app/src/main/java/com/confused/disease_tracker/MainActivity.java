@@ -1,9 +1,15 @@
 package com.confused.disease_tracker;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.location.LocationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +37,8 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    Context context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         Setting.setWindow(this);
         AndroidThreeTen.init(this);
         startService();
-
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
