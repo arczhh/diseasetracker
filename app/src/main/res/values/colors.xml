@@ -6,4 +6,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="base">#737373</color>
+    <color name="startblue">#bcbcb4</color>
+    <color name="endblue">#bcbcb4</color>
+    <color name="graylight">#737373</color>
 </resources>

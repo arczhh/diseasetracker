@@ -72,7 +72,7 @@ public class LocationService extends Service {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 startMyOwnForeground();
             else
-                startForeground(0, new Notification());
+                startForeground(1, new Notification());
             listener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
@@ -114,6 +114,8 @@ public class LocationService extends Service {
                 return;
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Config.getCollectPoint_refreshTime(), Config.getCollectPoint_minDistance(), listener);
+            Log.d("Location/On Changed", "Min distance: " +Config.getCollectPoint_minDistance());
+
         }else{
             stopService(new Intent(this, LocationService.class));
             startActivity(new Intent(this, Login.class));
@@ -141,14 +143,15 @@ public class LocationService extends Service {
         manager.createNotificationChannel(chan);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        Notification notification = notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.drawable.ic_map_black_24dp)
-                .setContentTitle("App is running in background")
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .setContentText(user.getEmail())
+        @SuppressLint("WrongConstant") Notification notification = notificationBuilder.setOngoing(true)
+                //.setSmallIcon(R.drawable.ic_map_black_24dp)
+                //.setContentTitle("App is running in background")
+                //.setPriority(NotificationManager.IMPORTANCE_MIN)
+                //.setCategory(Notification.CATEGORY_SERVICE)
+                //.setContentText(user.getEmail())
+                .setVisibility(Notification.VISIBILITY_SECRET)
                 .build();
-        startForeground(0, notification);
+        startForeground(1, notification);
     }
 
     private void insertLocation(double lat, double lng){
@@ -157,9 +160,11 @@ public class LocationService extends Service {
             sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng);
         }else{
             while (lastLoc.moveToNext()) {
-                if(AlgorithmHelper.calDistance(lastLoc.getDouble(2), lastLoc.getDouble(3), lat, lng) > com.confused.disease_tracker.config.Config.getCollectPoint_distance()){
+                boolean flag = AlgorithmHelper.calDistance(lastLoc.getDouble(2), lastLoc.getDouble(3), lat, lng) > (double) Config.getCollectPoint_minDistance()/1000;
+                Log.d("Location/Insert", "Condition: " + AlgorithmHelper.calDistance(lastLoc.getDouble(2), lastLoc.getDouble(3), lat, lng) +" > "+ (double) Config.getCollectPoint_minDistance()/1000 +" => "+flag);
+                if(AlgorithmHelper.calDistance(lastLoc.getDouble(2), lastLoc.getDouble(3), lat, lng) > (double) Config.getCollectPoint_minDistance()/1000){
                     sqLiteDatabase.insertUserLocation(user.getUid(), lat, lng);
-                    Toast.makeText(this, "New point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "New point: "+lat+", "+lng, Toast.LENGTH_SHORT).show();
                 }
             }
         }

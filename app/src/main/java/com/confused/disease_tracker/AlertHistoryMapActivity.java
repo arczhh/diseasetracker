@@ -2,6 +2,7 @@ package com.confused.disease_tracker;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class AlertHistoryMapActivity extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
@@ -49,6 +51,8 @@ public class AlertHistoryMapActivity extends FragmentActivity implements OnMapRe
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Log.d("AID", ""+getIntent().getExtras().getInt("aid"));
+        sqLiteDatabase.markAsReadAlertHistory(getIntent().getExtras().getInt("aid"));
     }
 
     @Override
@@ -94,6 +98,14 @@ public class AlertHistoryMapActivity extends FragmentActivity implements OnMapRe
 
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((usrLoc.latitude+patLoc.latitude)/2, (usrLoc.longitude+patLoc.longitude)/2),19));
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("hasBackPressed",true);
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
     }
 
 }

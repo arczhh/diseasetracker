@@ -59,6 +59,8 @@
         <activity android:name=".authen.EditProfile" />
         <activity android:name=".authen.Profile" />
         <activity android:name=".authen.Register" />
+        <activity android:name=".helper.AlertHistoryListview" />
+        <activity android:name=".AgreementActivity" />
         <activity
             android:name=".SplashScreen"
             android:label="@string/app">
