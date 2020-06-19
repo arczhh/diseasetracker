@@ -18,6 +18,9 @@ import android.widget.Toast;
 
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
+import com.confused.disease_tracker.service.DataUpdateService;
+import com.confused.disease_tracker.service.DetectorService;
+import com.confused.disease_tracker.service.LocationService;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -103,6 +106,15 @@ public class Profile extends AppCompatActivity {
 
         logout.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                LocationService mYourService1 = new LocationService();
+                DetectorService mYourService2 = new DetectorService();
+                DataUpdateService mYourService3 = new DataUpdateService();
+                Intent mServiceIntent1 = new Intent(getApplicationContext(), mYourService1.getClass());
+                Intent mServiceIntent2 = new Intent(getApplicationContext(), mYourService2.getClass());
+                Intent mServiceIntent3 = new Intent(getApplicationContext(), mYourService3.getClass());
+                stopService(mServiceIntent1);
+                stopService(mServiceIntent2);
+                stopService(mServiceIntent3);
                 finish();
                 FirebaseAuth.getInstance().signOut();//logout
                 startActivity(new Intent(getApplicationContext(), Login.class));

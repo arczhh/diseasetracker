@@ -189,40 +189,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     private void patientLocation() {
-        db.collection("patient")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (final QueryDocumentSnapshot document : task.getResult()) {
-                                db.collection("patient/" + document.getId() + "/location")
-                                        .orderBy("timestamp")
-                                        .limit(1)
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    for (QueryDocumentSnapshot location : task.getResult()) {
-
-                                                        mMap.addMarker(new MarkerOptions()
-                                                                .position(new LatLng((double) location.getData().get("lat"), (double) location.getData().get("lng")))
-                                                                .title((String) document.getData().get("patientName"))
-                                                                .snippet((String) document.getData().get("patientStatus")+" - "+location.getData().get("timestamp"))
-                                                                .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(),R.drawable.ic_patient)));
-                                                    }
-                                                } else {
-                                                    Log.d("TAG", "Error getting documents: ", task.getException());
-                                                }
-                                            }
-                                        });
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+        Cursor patients = sqLiteDatabase.getPatientData();
+        while (patients.moveToNext()){
+            Cursor patientLocations = sqLiteDatabase.getPatientLocationLastest(patients.getString(0));
+            while(patientLocations.moveToNext()){
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(patientLocations.getDouble(2), patientLocations.getDouble(3)))
+                        .title(patients.getString(1))
+                        .snippet(patients.getString(3)+" - "+patientLocations.getString(4))
+                        .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(),R.drawable.ic_patient)));
+            }
+        }
     }
 
     public void getHospitalData(){
@@ -239,15 +216,4 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.i ("Service status", "Running");
-                return true;
-            }
-        }
-        Log.i ("Service status", "Not running "+serviceClass.getName());
-        return false;
-    }
 }

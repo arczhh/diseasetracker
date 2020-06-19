@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_marginTop="30dp"
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ข้อตกลง"
+        android:textSize="20dp"
+        android:textColor="#000"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/textView7"
+        android:layout_width="340dp"
+        android:layout_height="29dp"
+        android:text="เงี่อนไขและกติกา"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/textView8"
+        android:layout_width="340dp"
+        android:layout_height="94dp"
+        android:text="ข้อมูลสำคัญ: โปรดอ่านข้อมูลที่กำหนดไว้ด้านล่างอย่างละเอียดก่อนที่จะยอมรับข้อกำหนดและเงื่อนไข กฎกติการะเบียบ ข้อบังคับและข้อมูลที่เกี่ยวข้องกับการใช้แอปพลิเคชันนี้"
+        />
+
+    <ScrollView
+        android:background="@drawable/shadow_border"
+        android:layout_marginTop="5dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="340dp"
+        android:layout_height="350dp">
+
+        <LinearLayout
+            android:layout_gravity="center_horizontal"
+            android:layout_width="330dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="\t\t\tผู้จัดทำได้ทำแอปพลิเคชันสำหรับติดตั้งบนโทรศัพท์มือถือประเภทสมาร์ตโฟนเพื่อใช้บันทึกข้อมูลการเดินทางและติดตามผู้ใช้ โดยหลักการพื้นฐานของแอปพลิเคชันเหล่านี้จะเป็นการบันทึกข้อมูลว่าผู้ใช้ได้เดินทางหรือมีความใกล้ชิดหรือเข้าใกล้กับบุคลที่ติดเชื้อ COVID-19 หรือไม่หากมีระบบจะทำการแจ้งเตือน\n\n\t\t\ข้อมูลดังกล่าวจำเป็นต้องมีการเก็บบันทึกแอปพลิเคชันจึงจะสามารถนำไปข้อมูลของท่านไปใช้งานร่วมได้ โดยผู้ใช้จะต้องทำการอนุญาตให้แอปพลิเคชัน ได้แก่\n\t\t\t①\t\tอนุญาตการเข้าถึงตำแหน่ง\n\t\t\t②\t\tอนุญาตเก็บข้อมูลตำแหน่งของผู้ใช้ \n\n\t\t\tเพื่อที่แอปพลิเคชันจะสามารถนำไปใช้ได้อย่างมีประสิทธิภาพสูงสุดในการทำงานของระบบเพื่อแจ้งเตือนความเสี่ยงในการติดเชื้อ COVID-19 ของผู้ใช้ในภายหลังได้ ซึ่งแอปพลิเคชันจะทำการเก็บรวบรวมให้โดยอัตโนมัติ\n\n\t\t\tหากมีการใช้งานไปเป็นระยะเวลาหนึ่งแล้วผู้ใช้สงสัยว่าติดเชื้อหรือมีความมั่นใจในระดับหนึ่งไม่ว่าจะเป็นอาการหรือลักษณะใด ๆ ผู้ใช้งานสามารถนำข้อมูลที่ระบบรวบรวมไว้อัปโหลดเพื่อแจ้งผู้ใช้ท่านอื่นว่ามีความเสี่ยงหากเคยไปตำแหน่งเดียวกันกับคุณ\n" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <CheckBox
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/checkBox1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ข้าพเจ้ายอมรับข้อกำหนดและเงื่อนไข" />
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <Button
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/acceptBtn"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="ยอมรับ"
+            android:textColor="#fff"
+            android:background="@drawable/buttonstyleithgradient" />
+
+        <Button
+            android:id="@+id/cancelBtn"
+            android:layout_marginLeft="20dp"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="ยกเลิก"
+            android:textColor="#fff"
+            android:background="@drawable/buttonstyleithgradient"/>
+    </LinearLayout>
+</LinearLayout>

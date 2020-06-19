@@ -47,7 +47,6 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Setting.setWindow(this);
-        Setting.checkUserLocationPermission(this);
 
         mEmail = findViewById(R.id.Email);
         mPassword = findViewById(R.id.password);

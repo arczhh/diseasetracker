@@ -13,13 +13,16 @@ public class Config {
     private static double cond1_distance = 0.015;
     private static double cond2_distance = 0.005;
     private static int range_min = 60; // minute
-    private static int DetectorService_period_timework = 1; // minute
+    private static int DetectorService_period_timework = 60; // minute
 
     // Config DataUpdateService
-    private static int DataUpdateService_period_timework = 1; // minute
+    private static int DataUpdateService_period_timework = 60; // minute
 
     // Splash Screen
-    private static int SPLASH_TIME_OUT = 4000; // ms
+    private static int SPLASH_TIME_OUT = 2000; // ms
+
+    // Home Fragment
+    private static int HOME_FRAGMENT_SPLASH_TIME_OUT = 4000; // ms
 
     public static String getDisease() {
         return disease;
@@ -61,4 +64,7 @@ public class Config {
         return SPLASH_TIME_OUT;
     }
 
+    public static int getHomeFragmentSplashTimeOut() {
+        return HOME_FRAGMENT_SPLASH_TIME_OUT;
+    }
 }

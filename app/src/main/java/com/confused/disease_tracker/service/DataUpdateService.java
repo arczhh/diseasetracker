@@ -23,6 +23,8 @@ import com.confused.disease_tracker.Setting;
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.config.Config;
 import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -63,6 +65,7 @@ public class DataUpdateService  extends Service {
                 public void run () {
                     // your code here...
                     downloadPatient();
+                    downloadHospital();
                 }
             };
 
@@ -143,5 +146,54 @@ public class DataUpdateService  extends Service {
                         }
                     });
         }
+    private void downloadHospital() {
+        sqLiteDatabase.dropHospital();
+        db.collection("application").document("hospital")
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    final DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        db.collection("hospital")
+                                .get()
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        if (task.isSuccessful()) {
+                                            for (final QueryDocumentSnapshot hospital : task.getResult()) {
+                                                db.collection("hospital/" + hospital.getId() + "/responsible")
+                                                        .get()
+                                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                                if (task.isSuccessful()) {
+                                                                    String respDisease = "โรคที่รับผิดชอบ: ";
+                                                                    int strLength = respDisease.length();
+                                                                    for (QueryDocumentSnapshot resp : task.getResult()) {
+                                                                        respDisease += resp.getData().get("diseaseName")+", ";
+                                                                    }
+                                                                    if(respDisease.length() == strLength){
+                                                                        respDisease = "ไม่พบข้อมูล";
+                                                                    }else{
+                                                                        respDisease = respDisease.substring(0, respDisease.length() - 2);
+                                                                    }
+                                                                    sqLiteDatabase.insertHospital((String) hospital.getData().get("hospitalName"), (double) hospital.getData().get("lat"), (double) hospital.getData().get("lng"), respDisease);
+                                                                } else {
+                                                                    Log.d("TAG", "Error getting documents: ", task.getException());
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        } else {
+                                            Log.d("TAG", "Error getting documents: ", task.getException());
+                                        }
+                                    }
+                                });
+                    }
+                }
+            }
+        });
+    }
 }
 

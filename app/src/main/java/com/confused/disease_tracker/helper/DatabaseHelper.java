@@ -243,6 +243,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getPatientLocationLastest(String pid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = '"+pid+"' ORDER BY TIMESTAMP LIMIT 1",null);
+        return res;
+    }
+
     public void dropPatientLocation(){
         sqLiteDatabase.execSQL("DELETE FROM "+TAB4);
     }
