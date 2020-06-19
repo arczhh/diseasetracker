@@ -35,10 +35,10 @@ public class Setting {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
-    public static BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorDrawableResourceId) {
+    public static BitmapDescriptor bitmapDescriptorFromVector(Context context, Activity activity, int vectorDrawableResourceId) {
         //Drawable background = ContextCompat.getDrawable(context, R.drawable.ic_transparent);
         //background.setBounds(0, 0, background.getIntrinsicWidth(), background.getIntrinsicHeight());
-        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorDrawableResourceId);
+        Drawable vectorDrawable = ContextCompat.getDrawable(activity.getApplicationContext(), vectorDrawableResourceId);
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth() , vectorDrawable.getIntrinsicHeight());
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);

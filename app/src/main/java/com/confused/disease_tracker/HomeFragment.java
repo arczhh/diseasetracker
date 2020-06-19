@@ -210,7 +210,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                                                                 .position(new LatLng((double) location.getData().get("lat"), (double) location.getData().get("lng")))
                                                                 .title((String) document.getData().get("patientName"))
                                                                 .snippet((String) document.getData().get("patientStatus")+" - "+location.getData().get("timestamp"))
-                                                                .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_patient)));
+                                                                .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(),R.drawable.ic_patient)));
                                                     }
                                                 } else {
                                                     Log.d("TAG", "Error getting documents: ", task.getException());
@@ -235,7 +235,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                     .position(new LatLng(res.getDouble(2), res.getDouble(3)))
                     .title(res.getString(1))
                     .snippet(res.getString(4))
-                    .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
+                    .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(), R.drawable.ic_hospital)));
         }
     }
 
