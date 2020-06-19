@@ -178,7 +178,7 @@ public class DetectorService extends Service {
     public ArrayList<Patient> patient(){
         Patient patient;
         ArrayList<Patient> patients = new ArrayList<>();;
-        Cursor user = sqLiteDatabase.getUserData(myUser.getUserid());
+        Cursor user = sqLiteDatabase.getUserData(FirebaseAuth.getInstance().getCurrentUser().getUid());
         while(user.moveToNext()){
             Cursor pat = sqLiteDatabase.getPatientData(user.getString(2));
             Log.d("Database/Patient","Patient location size: "+pat.getCount());

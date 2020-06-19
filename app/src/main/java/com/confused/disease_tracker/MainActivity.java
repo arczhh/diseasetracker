@@ -50,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
                 //I added this if statement to keep the selected fragment when rotating the device
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new HomeFragment()).commit();
+                // Start DetectorService
+                DetectorService mDetectorService = new DetectorService();
+                Intent mServiceIntent3 = new Intent(getApplicationContext(), mDetectorService.getClass());
+                if (!isMyServiceRunning(mDetectorService.getClass())) {
+                    startService(mServiceIntent3);
+                }
             }
         }, Config.getHomeFragmentSplashTimeOut());
 
@@ -116,13 +122,6 @@ public class MainActivity extends AppCompatActivity {
         Intent mServiceIntent2 = new Intent(getApplicationContext(), mLocationService.getClass());
         if (!isMyServiceRunning(mLocationService.getClass())) {
             startService(mServiceIntent2);
-        }
-
-        // Start DetectorService
-        DetectorService mDetectorService = new DetectorService();
-        Intent mServiceIntent3 = new Intent(getApplicationContext(), mDetectorService.getClass());
-        if (!isMyServiceRunning(mDetectorService.getClass())) {
-            startService(mServiceIntent3);
         }
     }
 
