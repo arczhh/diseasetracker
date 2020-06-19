@@ -4,10 +4,10 @@
     android:layout_height="match_parent"
     android:background="@android:color/background_light">
     <TextView
-        android:id="@+id/Text1"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Alert history"
+        android:text="การแจ้งเตือน 7 วันที่ผ่านมา"
         android:textSize="25dp"
         android:textColor="@color/black"
         android:layout_centerHorizontal="true"

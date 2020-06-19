@@ -3,129 +3,57 @@ package com.confused.disease_tracker;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
+import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.confused.disease_tracker.datatype.LocationChecker;
-import com.confused.disease_tracker.datatype.Patient;
-import com.confused.disease_tracker.datatype.User;
-import com.confused.disease_tracker.helper.DatabaseHelper;
+import com.confused.disease_tracker.authen.Login;
+import com.confused.disease_tracker.authen.Profile;
+import com.confused.disease_tracker.config.Config;
+import com.confused.disease_tracker.helper.LoadingFragment;
 import com.confused.disease_tracker.service.DataUpdateService;
 import com.confused.disease_tracker.service.DetectorService;
 import com.confused.disease_tracker.service.LocationService;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
-<<<<<<< Updated upstream
-import android.widget.ArrayAdapter;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-=======
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.Toast;
-
-public class MainActivity extends AppCompatActivity {
-
-    CheckBox checkbox1;
-    Button button2;
-
-
->>>>>>> Stashed changes
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Setting.setWindow(this);
-        AndroidThreeTen.init(this);
-<<<<<<< Updated upstream
-
-        startService();
-=======
-        LocationService mYourService = new LocationService();
-        Intent mServiceIntent = new Intent(this, mYourService.getClass());
-
-        if (!isMyServiceRunning(mYourService.getClass())) {
-            startService(mServiceIntent);
-        }
->>>>>>> Stashed changes
-
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+        startServices();
 
-        //I added this if statement to keep the selected fragment when rotating the device
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new HomeFragment()).commit();
-        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                new LoadingFragment()).commit();
 
-
-
-
-
-        checkbox1 = (CheckBox)findViewById(R.id.checkBox1);
-        button2 = (Button)findViewById(R.id.button2);
-
-        checkbox1.setOnClickListener(new View.OnClickListener(){
+        new Handler().postDelayed(new Runnable() {
             @Override
-            public void onClick(View v) {
-                validation();
+            public void run() {
+                //I added this if statement to keep the selected fragment when rotating the device
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new HomeFragment()).commit();
             }
-        });
-
-
+        }, Config.getHomeFragmentSplashTimeOut());
 
     }
-
-//เช็คว่า CheckBox ถูกติ๊กรึยัง
-    public void validation(){
-        if(!checkbox1.isChecked()){
-            Toast.makeText(MainActivity.this, "กรุณายอมรับข้อตกลงก่อนการใช้งาน", Toast.LENGTH_LONG).show();
-            return;
-        }
-        Toast.makeText(MainActivity.this, "เสร็จสมบูรณ์", Toast.LENGTH_SHORT ).show();
-    }
-
-<<<<<<< Updated upstream
-    private void startService(){
-
-        LocationService mLocationService = new LocationService();
-        Intent mServiceIntent2 = new Intent(this, mLocationService.getClass());
-        if (!isMyServiceRunning(mLocationService.getClass())) {
-            startService(mServiceIntent2);
-        }
-
-        DetectorService mDetectorService = new DetectorService();
-        Intent mServiceIntent3 = new Intent(this, mDetectorService.getClass());
-        if (!isMyServiceRunning(mDetectorService.getClass())) {
-            startService(mServiceIntent3);
-        }
-    }
-=======
-
-
-
->>>>>>> Stashed changes
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -145,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                             selectedFragment = new AlertHistoryFragment();
                             break;
                         case R.id.nav_setting:
-                            selectedFragment = new SettingFlagment();
+                            selectedFragment = new AccountFragment();
                             break;
                     }
 
@@ -155,6 +83,48 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
             };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                boolean passwordChanged = data.getBooleanExtra("passwordChanged", false);
+                boolean emailChanged = data.getBooleanExtra("emailChanged", false);
+                if(passwordChanged | emailChanged ){
+                    Setting.stopAllServices(getApplicationContext(), this);
+                    finish();
+                    startActivity(new Intent(getApplicationContext(), Login.class));
+                }
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }
+
+    public void startServices(){
+        // Start DataUpdateService
+        DataUpdateService mDataUpdateService = new DataUpdateService();
+        Intent mServiceIntent1 = new Intent(getApplicationContext(), mDataUpdateService.getClass());
+        if (!isMyServiceRunning(mDataUpdateService.getClass())) {
+            startService(mServiceIntent1);
+        }
+
+        // Start LocationService
+        LocationService mLocationService = new LocationService();
+        Intent mServiceIntent2 = new Intent(getApplicationContext(), mLocationService.getClass());
+        if (!isMyServiceRunning(mLocationService.getClass())) {
+            startService(mServiceIntent2);
+        }
+
+        // Start DetectorService
+        DetectorService mDetectorService = new DetectorService();
+        Intent mServiceIntent3 = new Intent(getApplicationContext(), mDetectorService.getClass());
+        if (!isMyServiceRunning(mDetectorService.getClass())) {
+            startService(mServiceIntent3);
+        }
+    }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -167,11 +137,5 @@ public class MainActivity extends AppCompatActivity {
         Log.i ("Service status", "Not running "+serviceClass.getName());
         return false;
     }
-<<<<<<< Updated upstream
-=======
 
-
-
-
->>>>>>> Stashed changes
 }

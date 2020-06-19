@@ -73,6 +73,6 @@ public class LocationChecker {
     }
 
     public String getMsg() {
-        return "ตรวจพบตำแหน่งตรงกันกับคุณ"+this.patientName+", ผู้ป่วยโรค "+this.patientDisease+" ซึ่งอยู่ห่างกันเป็นระยะ: "+this.distance+" กม. เมื่อเวลาช่วง "+this.usrLocation.getTimestamp();
+        return "ตรวจพบตำแหน่งตรงกันกับผู้ป่วยโรค "+this.patientDisease+"\nซึ่งอยู่ห่างกันเป็นระยะ: "+this.distance+" กม.\nเมื่อวันที่: "+String.valueOf(this.usrLocation.getTimestamp()).split("T")[0]+" เวลา: "+String.valueOf(this.usrLocation.getTimestamp()).split("T")[1];
     }
 }

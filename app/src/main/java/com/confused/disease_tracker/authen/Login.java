@@ -1,7 +1,9 @@
 package com.confused.disease_tracker.authen;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -16,7 +18,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import com.confused.disease_tracker.AgreementActivity;
 import com.confused.disease_tracker.MainActivity;
 import com.confused.disease_tracker.R;
 import com.confused.disease_tracker.Setting;
@@ -47,7 +51,6 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Setting.setWindow(this);
-        Setting.checkUserLocationPermission(this);
 
         mEmail = findViewById(R.id.Email);
         mPassword = findViewById(R.id.password);
@@ -93,11 +96,13 @@ public class Login extends AppCompatActivity {
                             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
                             FirebaseUser user = fAuth.getCurrentUser();
                             if(!user.isEmailVerified()){
-                                finish();
                                 startActivity(new Intent(getApplicationContext(), Profile.class));
-                            }else{
                                 finish();
-                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            }else{
+                                if(user.isEmailVerified() && (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)){
+                                    startActivity(new Intent(getApplicationContext(), AgreementActivity.class));
+                                    finish();
+                                }
                             }
                         }else {
                             //Toast.makeText(Login.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();

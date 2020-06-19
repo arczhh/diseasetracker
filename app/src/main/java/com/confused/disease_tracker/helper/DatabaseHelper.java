@@ -17,6 +17,8 @@ import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
+
+import java.util.Date;
 import java.util.TimeZone;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -26,6 +28,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAB3 = "patient";
     private static final String TAB4 = "patientlocation";
     private static final String TAB5 = "alert_history";
+    private static final String TAB6 = "upload_date";
+    private static final String TAB7 = "user";
     private SQLiteDatabase sqLiteDatabase;
 
     public DatabaseHelper(Context context) {
@@ -40,8 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "USERID VARCHAR(40),"+
                 "LAT DOUBLE," +
                 "LNG DOUBLE,"+
-                "TIMESTAMP VARCHAR2(50),"+
-                "isMajor INT(1)"+
+                "TIMESTAMP VARCHAR2(50)"+
                 ")");
         sqLiteDatabase.execSQL("CREATE TABLE "+TAB2+"(" +
                 "HOSPITALID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -76,6 +79,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "RISK INT(1),"+
                 "IS_READ INT(1)"+
                 ")");
+        sqLiteDatabase.execSQL("CREATE TABLE "+TAB6+"(" +
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "UID VARCHAR2(40)," +
+                "PID VARCHAR2(40)," +
+                "TIMESTAMP VARCHAR2(40)," +
+                "LID INTEGER"+
+                ")");
+        sqLiteDatabase.execSQL("CREATE TABLE "+TAB7+"(" +
+                "UID VARCHAR2(40) PRIMARY KEY, " +
+                "EMAIL VARCHAR2(40)," +
+                "NAME VARCHAR2(40)" +
+                ")");
     }
 
     @Override
@@ -85,21 +100,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB3);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB4);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB5);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB6);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TAB7);
         onCreate(sqLiteDatabase);
     }
 
     // Tab1
-    public boolean insertUserLocation(String userid, double lat, double lng, int isMajor){
-        LocalTime localTimeInBangkok = LocalTime.now(ZoneId.of("Asia/Bangkok"));
+    public boolean insertUserLocation(String userid, double lat, double lng){
+        /*LocalTime localTimeInBangkok = LocalTime.now(ZoneId.of("Asia/Bangkok"));
         LocalDate localDateInBangkok = LocalDate.now(ZoneId.of("Asia/Bangkok"));
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");*/
+        LocalDateTime localDateTime = LocalDateTime.now();
         ContentValues contentValues = new ContentValues();
         contentValues.put("USERID", userid);
         contentValues.put("LAT", lat);
         contentValues.put("LNG", lng);
-        contentValues.put("TIMESTAMP", localDateInBangkok.format(dateFormat)+"T"+localTimeInBangkok.format(timeFormat));
-        contentValues.put("isMajor", isMajor);
+        contentValues.put("TIMESTAMP", String.valueOf(localDateTime));
         long result = sqLiteDatabase.insert(TAB1, null, contentValues);
         if(result == -1){
             return false;
@@ -108,9 +125,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor getUserLocationData(String USERID){
-     Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE isMajor=1 AND USERID = '"+USERID+"' ORDER BY USERID, LID",null);
-     return res;
+    public boolean insertUserLocationWithTime(String userid, double lat, double lng, String timestamp){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("USERID", userid);
+        contentValues.put("LAT", lat);
+        contentValues.put("LNG", lng);
+        contentValues.put("TIMESTAMP", timestamp);
+        long result = sqLiteDatabase.insert(TAB1, null, contentValues);
+        if(result == -1){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     public Cursor getUserLastLocationData(String USERID){
@@ -118,21 +144,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public Cursor getUserLastMajorLocationData(String USERID){
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND isMajor = 1 ORDER BY LID  DESC LIMIT 1",null);
+    public Cursor checkLocationInUserLocation(String USERID, double lat, double lng){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND LAT = "+lat+" AND LNG = "+lng,null);
         return res;
     }
 
-    public Cursor getUserLocationTrack(String USERID){
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"'",null);
-        return res;
+    public void deleteFakeUserLocation(double lat, double lng){
+        sqLiteDatabase.execSQL("DELETE FROM "+TAB1+" WHERE LAT = "+lat+" AND LNG = "+lng);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public Cursor getUserLocationDataByDate(String USERID){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
         String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
-        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY USERID, LID",null);
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY TIMESTAMP",null);
+        return res;
+    }
+
+    public Cursor getUserLocationDataByLID(String USERID, int lid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND LID > "+lid,null);
         return res;
     }
 
@@ -181,6 +210,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB3,null);
         return res;
     }
+    public Cursor getPatientData(String name){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB3+" WHERE NAME <> '"+name+"'",null);
+        return res;
+    }
 
     public void dropPatient(){
         sqLiteDatabase.execSQL("DELETE FROM "+TAB3);
@@ -207,6 +240,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
         String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = '"+pid+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
+        return res;
+    }
+
+    public Cursor getPatientLocationLastest(String pid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = '"+pid+"' ORDER BY TIMESTAMP LIMIT 1",null);
         return res;
     }
 
@@ -241,6 +279,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getAlertHistory7Days(String uid){
+        String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(8)).split("T")[0];
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY ID",null);
+        return res;
+    }
+
+    public Cursor getAlertHistory(String uid, int risk){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"' AND RISK = "+risk,null);
+        return res;
+    }
+
     public Cursor getAlertHistory(String uid, String pid, double usr_lat, double usr_lng, double pat_lat, double pat_lng ){
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"' AND PID = '"+pid+"' AND USR_LAT = "+usr_lat+" AND USR_LNG = "+usr_lng+" AND PAT_LAT = "+pat_lat+" AND PAT_LNG = "+pat_lng ,null);
         return res;
@@ -248,6 +298,71 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getAlertHistory(int id){
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE ID = "+id,null);
+        return res;
+    }
+
+    public void markAsReadAlertHistory(int id){
+        sqLiteDatabase.execSQL("UPDATE "+ TAB5 +
+                " SET IS_READ = 1"+
+                " WHERE ID = "+id);
+    }
+
+    // Tab 6 - Upload location at date
+    public boolean insertUploadDate(String uid, String pid, String timestamp, int lid){
+        Log.d("uploadDate/Insert",uid+", "+timestamp);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("PID", pid);
+        contentValues.put("UID", uid);
+        contentValues.put("TIMESTAMP", timestamp);
+        contentValues.put("LID", lid);
+        long result = sqLiteDatabase.insert(TAB6, null, contentValues);
+        if(result == -1){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public void updateUploadDate(String uid, String pid, String timestamp, int lid){
+        sqLiteDatabase.execSQL("UPDATE "+ TAB6 +
+                " SET TIMESTAMP = '"+timestamp+"', LID = "+lid+
+                " WHERE PID = '"+pid+"' AND UID = '"+uid+"'");
+    }
+
+    public void updateUploadDate(String uid, String pid){
+        sqLiteDatabase.execSQL("UPDATE "+ TAB6 +
+                " SET PID = '"+pid+"'"+
+                " WHERE UID = '"+uid+"'");
+    }
+
+    public Cursor getUploadDate(String uid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB6+" WHERE UID = '"+uid+"' ORDER BY ID DESC LIMIT 1",null);
+        return res;
+    }
+
+    // Tab 7 - User data
+    public boolean insertUser(String uid, String email, String name){
+        Log.d("uploadDate/Insert",uid+", "+email+", "+name);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("UID", uid);
+        contentValues.put("EMAIL", email);
+        contentValues.put("NAME", name);
+        long result = sqLiteDatabase.insert(TAB7, null, contentValues);
+        if(result == -1){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public void updateUser(String uid, String name, String email){
+        sqLiteDatabase.execSQL("UPDATE "+ TAB7 +
+                " SET EMAIL = '"+email+"', NAME = '"+name+"'"+
+                " WHERE UID = '"+uid+"'");
+    }
+
+    public Cursor getUserData(String uid){
+        Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB7+" WHERE UID = '"+uid+"'",null);
         return res;
     }
 

@@ -2,6 +2,9 @@ package com.confused.disease_tracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
@@ -30,6 +33,7 @@ import com.confused.disease_tracker.helper.CustomInfoWindowAdapter;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.DialogPopup;
 import com.confused.disease_tracker.helper.FontManager;
+import com.confused.disease_tracker.service.DetectorService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -185,40 +189,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     private void patientLocation() {
-        db.collection("patient")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (final QueryDocumentSnapshot document : task.getResult()) {
-                                db.collection("patient/" + document.getId() + "/location")
-                                        .orderBy("timestamp")
-                                        .limit(1)
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    for (QueryDocumentSnapshot location : task.getResult()) {
-
-                                                        mMap.addMarker(new MarkerOptions()
-                                                                .position(new LatLng((double) location.getData().get("lat"), (double) location.getData().get("lng")))
-                                                                .title((String) document.getData().get("patientName"))
-                                                                .snippet((String) document.getData().get("patientStatus")+" - "+location.getData().get("timestamp"))
-                                                                .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_patient)));
-                                                    }
-                                                } else {
-                                                    Log.d("TAG", "Error getting documents: ", task.getException());
-                                                }
-                                            }
-                                        });
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+        Cursor patients = sqLiteDatabase.getPatientData();
+        while (patients.moveToNext()){
+            Cursor patientLocations = sqLiteDatabase.getPatientLocationLastest(patients.getString(0));
+            while(patientLocations.moveToNext()){
+                mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(patientLocations.getDouble(2), patientLocations.getDouble(3)))
+                        .title(patients.getString(1))
+                        .snippet(patients.getString(3)+" - "+patientLocations.getString(4))
+                        .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(),R.drawable.ic_patient)));
+            }
+        }
     }
 
     public void getHospitalData(){
@@ -231,7 +212,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
                     .position(new LatLng(res.getDouble(2), res.getDouble(3)))
                     .title(res.getString(1))
                     .snippet(res.getString(4))
-                    .icon(Setting.bitmapDescriptorFromVector(getContext(), R.drawable.ic_hospital)));
+                    .icon(Setting.bitmapDescriptorFromVector(getContext(), getActivity(), R.drawable.ic_hospital)));
         }
     }
+
 }
