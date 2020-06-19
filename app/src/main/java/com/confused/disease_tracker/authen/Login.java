@@ -102,6 +102,9 @@ public class Login extends AppCompatActivity {
                                 if(user.isEmailVerified() && (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)){
                                     startActivity(new Intent(getApplicationContext(), AgreementActivity.class));
                                     finish();
+                                }else {
+                                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                    finish();
                                 }
                             }
                         }else {
