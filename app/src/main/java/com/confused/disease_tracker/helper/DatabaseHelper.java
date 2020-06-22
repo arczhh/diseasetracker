@@ -340,6 +340,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public void dropUpload(){
+        sqLiteDatabase.execSQL("DELETE FROM "+TAB6);
+    }
+
     // Tab 7 - User data
     public boolean insertUser(String uid, String email, String name){
         Log.d("uploadDate/Insert",uid+", "+email+", "+name);

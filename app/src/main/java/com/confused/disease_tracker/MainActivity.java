@@ -15,6 +15,7 @@ import android.os.Bundle;
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.config.Config;
+import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.LoadingFragment;
 import com.confused.disease_tracker.service.DataUpdateService;
 import com.confused.disease_tracker.service.DetectorService;
@@ -35,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /*DatabaseHelper sqLiteDatabase = new DatabaseHelper(getApplicationContext());
+        sqLiteDatabase.dropUpload();*/
+
         setContentView(R.layout.activity_main);
         Setting.setWindow(this);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
@@ -58,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }, Config.getHomeFragmentSplashTimeOut());
-
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
