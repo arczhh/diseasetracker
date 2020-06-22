@@ -37,8 +37,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*DatabaseHelper sqLiteDatabase = new DatabaseHelper(getApplicationContext());
-        sqLiteDatabase.dropUpload();*/
+        DatabaseHelper sqLiteDatabase = new DatabaseHelper(getApplicationContext());
+        //sqLiteDatabase.dropUpload();
+        //sqLiteDatabase.dropAlertHistory();
 
         setContentView(R.layout.activity_main);
         Setting.setWindow(this);

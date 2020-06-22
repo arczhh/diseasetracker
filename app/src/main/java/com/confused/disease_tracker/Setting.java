@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -30,6 +31,14 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 
 public class Setting {
 
+    private static final int PERMISSION_CALLBACK_CONSTANT = 105;
+    private SharedPreferences permissionStatus;
+    String[] permissionsRequired = new String[]{
+            Manifest.permission.ACCESS_FINE_LOCATION
+            , Manifest.permission.ACCESS_COARSE_LOCATION
+            , Manifest.permission.ACCESS_BACKGROUND_LOCATION
+    };
+
     public static void setWindow(Activity activity){
         activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -48,11 +57,16 @@ public class Setting {
     }
 
     public static boolean checkUserLocationPermission(Activity activity){
+        String[] permissionsRequired = new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION
+                , Manifest.permission.ACCESS_COARSE_LOCATION
+                , Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        };
         if(ContextCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 99);
+           if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+               ActivityCompat.requestPermissions(activity, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
             }else{
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 8);
+               ActivityCompat.requestPermissions(activity, permissionsRequired, PERMISSION_CALLBACK_CONSTANT);
             }
             return false;
         }else{
@@ -78,7 +92,6 @@ public class Setting {
         activity.stopService(mServiceIntent2);
         activity.stopService(mServiceIntent3);
     }
-
 
 }
 
