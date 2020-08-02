@@ -15,6 +15,7 @@ import android.os.Bundle;
 import com.confused.disease_tracker.authen.Login;
 import com.confused.disease_tracker.authen.Profile;
 import com.confused.disease_tracker.config.Config;
+import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.confused.disease_tracker.helper.LoadingFragment;
 import com.confused.disease_tracker.service.DataUpdateService;
 import com.confused.disease_tracker.service.DetectorService;
@@ -35,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        DatabaseHelper sqLiteDatabase = new DatabaseHelper(getApplicationContext());
+        //sqLiteDatabase.dropUpload();
+        //sqLiteDatabase.dropAlertHistory();
+
         setContentView(R.layout.activity_main);
         Setting.setWindow(this);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
@@ -50,9 +56,14 @@ public class MainActivity extends AppCompatActivity {
                 //I added this if statement to keep the selected fragment when rotating the device
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new HomeFragment()).commit();
+                // Start DetectorService
+                DetectorService mDetectorService = new DetectorService();
+                Intent mServiceIntent3 = new Intent(getApplicationContext(), mDetectorService.getClass());
+                if (!isMyServiceRunning(mDetectorService.getClass())) {
+                    startService(mServiceIntent3);
+                }
             }
         }, Config.getHomeFragmentSplashTimeOut());
-
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
@@ -116,13 +127,6 @@ public class MainActivity extends AppCompatActivity {
         Intent mServiceIntent2 = new Intent(getApplicationContext(), mLocationService.getClass());
         if (!isMyServiceRunning(mLocationService.getClass())) {
             startService(mServiceIntent2);
-        }
-
-        // Start DetectorService
-        DetectorService mDetectorService = new DetectorService();
-        Intent mServiceIntent3 = new Intent(getApplicationContext(), mDetectorService.getClass());
-        if (!isMyServiceRunning(mDetectorService.getClass())) {
-            startService(mServiceIntent3);
         }
     }
 

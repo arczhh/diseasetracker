@@ -321,7 +321,14 @@ public class AccountFragment extends Fragment {
                                 fragTransaction.detach(currentFragment);
                                 fragTransaction.attach(currentFragment);
                                 fragTransaction.commit();
-                                Toast.makeText(getContext(), "อัปโหลดข้อมูลเสร็จสิ้น", Toast.LENGTH_SHORT).show();
+                                if(userLoc.getCount() != 0){
+                                    Log.d("tag", "Data size by lid: "+userLoc.getCount());
+                                    Toast.makeText(getContext(), "อัปโหลดข้อมูลเสร็จสิ้น", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Log.d("tag", "Data size by lid: "+userLoc.getCount());
+                                    Toast.makeText(getContext(), "อัปโหลดข้อมูลไม่สำเร็จ เนื่องจากไม่มีตำแหน่งใหม่", Toast.LENGTH_SHORT).show();
+                                }
+
                             }
                         }
                     }

@@ -307,6 +307,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " WHERE ID = "+id);
     }
 
+    public void dropAlertHistory(){
+        sqLiteDatabase.execSQL("DELETE FROM "+TAB5);
+    }
+
     // Tab 6 - Upload location at date
     public boolean insertUploadDate(String uid, String pid, String timestamp, int lid){
         Log.d("uploadDate/Insert",uid+", "+timestamp);
@@ -338,6 +342,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getUploadDate(String uid){
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB6+" WHERE UID = '"+uid+"' ORDER BY ID DESC LIMIT 1",null);
         return res;
+    }
+
+    public void dropUpload(){
+        sqLiteDatabase.execSQL("DELETE FROM "+TAB6);
     }
 
     // Tab 7 - User data
