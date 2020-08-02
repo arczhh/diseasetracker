@@ -70,7 +70,7 @@ public class AlertHistoryFragment extends Fragment {
     }
 
     public void alertHistoryListView(){
-        Cursor row = sqLiteDatabase.getAlertHistory7Days(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        Cursor row = sqLiteDatabase.getAlertHistoryDays(FirebaseAuth.getInstance().getCurrentUser().getUid());
         if(row.getCount() < 0){
             Log.d("Database/Alert Hist","No data found.");
         }else{

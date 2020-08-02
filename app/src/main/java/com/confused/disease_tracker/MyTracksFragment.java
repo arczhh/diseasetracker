@@ -79,7 +79,7 @@ public class MyTracksFragment extends Fragment implements OnMapReadyCallback {
         // Animate to Thailand
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(14.276868, 100.493645),5));
 
-        Cursor alertHistory = sqLiteDatabase.getAlertHistory(user.getUid());
+        Cursor alertHistory = sqLiteDatabase.getAlertHistoryDays(user.getUid());
         while (alertHistory.moveToNext()){
             Log.d("Circle",alertHistory.getDouble(5)+", "+alertHistory.getDouble(6) );
             mMap.addCircle(new CircleOptions()

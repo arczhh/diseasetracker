@@ -5,6 +5,9 @@ public class Config {
     private static String disease = "โควิด-19";
     private static String defaultStausUpload = "ยังไม่ได้รับการตรวจสอบ";
 
+    // Day period
+    private static int periodDay = 14;
+
     // Config LocationService
     private static long collectPoint_refreshTime = 5; // minute
     private static int collectPoint_minDistance = 15;
@@ -66,5 +69,9 @@ public class Config {
 
     public static int getHomeFragmentSplashTimeOut() {
         return HOME_FRAGMENT_SPLASH_TIME_OUT;
+    }
+
+    public static int getPeriodDay() {
+        return periodDay+1;
     }
 }

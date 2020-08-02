@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.confused.disease_tracker.Setting;
+import com.confused.disease_tracker.config.Config;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
@@ -155,7 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getUserLocationDataByDate(String USERID){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
-        String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(Config.getPeriodDay())).split("T")[0];
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY TIMESTAMP",null);
         return res;
     }
@@ -279,9 +280,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public Cursor getAlertHistory7Days(String uid){
+    public Cursor getAlertHistoryDays(String uid){
         String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
-        String d2 = String.valueOf(LocalDateTime.now().minusDays(8)).split("T")[0];
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(Config.getPeriodDay())).split("T")[0];
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB5+" WHERE UID = '"+uid+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY ID",null);
         return res;
     }
