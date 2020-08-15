@@ -65,7 +65,7 @@ public class AlertHistoryFragment extends Fragment {
         View inf = inflater.inflate(R.menu.history_list, container, false);
         listView = (ListView) inf.findViewById(R.id.listView);
         alertHistoryListView();
-
+        //listOfUserLocation();
         return inf;
     }
 
@@ -137,6 +137,20 @@ public class AlertHistoryFragment extends Fragment {
                 //Write your code if there's no result
             }
         }
+    }
+
+    public void listOfUserLocation(){
+        Cursor row = sqLiteDatabase.getUserLocationDataByDate(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        if(row.getCount() < 0){
+            Log.d("Database/Alert Hist","No data found.");
+        }else{
+            Log.d("Database/Alert Hist","Size "+row.getCount());
+        }
+        while (row.moveToNext()) {
+            strings.add(row.getString(0)+", "+row.getString(1)+", "+row.getString(2)+", "+row.getString(3)+", "+row.getString(4));
+        }
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, strings);
+        listView.setAdapter(arrayAdapter);
     }
 
 }

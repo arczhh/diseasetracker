@@ -19,6 +19,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.confused.disease_tracker.datatype.Patient;
 import com.confused.disease_tracker.datatype.User;
+import com.confused.disease_tracker.helper.AlertHistoryListview;
 import com.confused.disease_tracker.helper.DatabaseHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -102,9 +103,9 @@ public class AlertHistoryMapActivity extends FragmentActivity implements OnMapRe
 
     @Override
     public void onBackPressed() {
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra("hasBackPressed",true);
-        setResult(Activity.RESULT_OK,returnIntent);
+        Intent i = new Intent(getApplicationContext(), AlertHistoryListview.class);
+        i.putExtra("risk", getIntent().getStringExtra("risk"));
+        startActivity(i);
         finish();
     }
 

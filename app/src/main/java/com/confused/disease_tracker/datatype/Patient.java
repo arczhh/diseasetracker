@@ -119,10 +119,16 @@ public class Patient {
                 boolean  flag1 = dist <= dist1 && dist > dist2;
                 boolean  flag2 = dist <= dist2;
                 if(flag1 && AlgorithmHelper.isInRange(usr.getTimestamp(), pat.getTimestamp(), min)) {
+                    // Check if size not equals to 0
                     if(newLocation.size() != 0) {
+                        // Check whether is this patient location already in arraylist
                         if(!newLocation.contains(pat)) {
-                            newLocation.add(pat);
-                            locationChecker.add(new LocationChecker(this, usr, pat, dist, 0));
+                            // if binary search found don't add a new Location checker
+                            int position = binarySearchForUsrLatLngAndUsrTimestamp(locationChecker, 0, locationChecker.size(), usr);
+                            if(position == -1){
+                                locationChecker.add(new LocationChecker(this, usr, pat, dist, 0));
+                                newLocation.add(pat);
+                            }
                         }
                     }else {
                         locationChecker.add(new LocationChecker(this, usr, pat, dist, 0));
@@ -131,8 +137,12 @@ public class Patient {
                 }else if(flag2 && AlgorithmHelper.isInRange(usr.getTimestamp(), pat.getTimestamp(), min)){
                     if(newLocation.size() != 0) {
                         if(!newLocation.contains(pat)) {
-                            newLocation.add(pat);
-                            locationChecker.add(new LocationChecker(this, usr, pat, dist, 1));
+                            // if binary search found don't add a new Location checker
+                            int position = binarySearchForUsrLatLngAndUsrTimestamp(locationChecker, 0, locationChecker.size(), usr);
+                            if(position == -1){
+                                newLocation.add(pat);
+                                locationChecker.add(new LocationChecker(this, usr, pat, dist, 1));
+                            }
                         }
                     }else {
                         locationChecker.add(new LocationChecker(this, usr, pat, dist, 1));
@@ -143,6 +153,39 @@ public class Patient {
         }
         this.locations = newLocation;
         return this;
+    }
+
+    // l = start, r = size-1 (redefine in func.)
+    int binarySearchForUsrLatLngAndUsrTimestamp(ArrayList<LocationChecker> locationChecker, int l, int r, MyLocation usr)
+    {
+        int[] ret;
+        r = r-1;
+        if (r >= l) {
+            int mid = l + (r - l) / 2;
+
+            // If the element is present at the
+            // middle itself
+            boolean latLngUsrEquals = locationChecker.get(mid).getUsrLocation().equals(usr.getLatLng());
+            boolean timestampUsrEquals = locationChecker.get(mid).getUsrLocation().getTimestamp().equals(usr.getTimestamp());
+
+            if (latLngUsrEquals || timestampUsrEquals){
+                return mid;
+            }
+
+
+            // If element is smaller than mid, then
+            // it can only be present in left subarray
+            if (!(latLngUsrEquals || timestampUsrEquals))
+                return binarySearchForUsrLatLngAndUsrTimestamp(locationChecker, l, mid - 1, usr);
+
+            // Else the element can only be present
+            // in right subarray
+            return binarySearchForUsrLatLngAndUsrTimestamp(locationChecker, mid + 1, r, usr);
+        }
+
+        // We reach here when element is not present
+        // in array
+        return -1;
     }
 
 }

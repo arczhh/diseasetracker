@@ -154,8 +154,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getUserLocationDataByDate(String USERID){
-        String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
-        String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
+        String d1 = String.valueOf(LocalDateTime.now().plusDays(1));
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(15));
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB1+" WHERE USERID = '"+USERID+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY TIMESTAMP",null);
         return res;
     }
@@ -237,8 +237,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getPatientLocationData(String pid){
-        String d1 = String.valueOf(LocalDateTime.now().plusDays(1)).split("T")[0];
-        String d2 = String.valueOf(LocalDateTime.now().minusDays(15)).split("T")[0];
+        String d1 = String.valueOf(LocalDateTime.now().plusDays(1));
+        String d2 = String.valueOf(LocalDateTime.now().minusDays(15));
         Cursor res = sqLiteDatabase.rawQuery("SELECT * FROM "+TAB4+" WHERE PID = '"+pid+"' AND TIMESTAMP BETWEEN '"+d2+"' AND '"+d1+"' ORDER BY PID, LID",null);
         return res;
     }

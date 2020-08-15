@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.confused.disease_tracker.AlertHistoryMapActivity;
 import com.confused.disease_tracker.R;
@@ -27,7 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
-public class AlertHistoryListview extends Activity {
+public class AlertHistoryListview extends AppCompatActivity {
     private DatabaseHelper sqLiteDatabase;
     private ListView listView;
     private ArrayList<String> strings = new ArrayList<>();
@@ -91,7 +92,9 @@ public class AlertHistoryListview extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), AlertHistoryMapActivity.class);
                 intent.putExtra("aid", aid.get(position));
+                intent.putExtra("risk", getIntent().getStringExtra("risk"));
                 startActivity(intent);
+                finish();
             }
         });
     }
@@ -129,7 +132,9 @@ public class AlertHistoryListview extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), AlertHistoryMapActivity.class);
                 intent.putExtra("aid", aid.get(position));
+                intent.putExtra("risk", getIntent().getStringExtra("risk"));
                 startActivity(intent);
+                finish();
             }
         });
     }
@@ -179,8 +184,15 @@ public class AlertHistoryListview extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), AlertHistoryMapActivity.class);
                 intent.putExtra("aid", aid.get(position));
+                intent.putExtra("risk", getIntent().getStringExtra("risk"));
                 startActivity(intent);
+                finish();
             }
         });
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
     }
 }
